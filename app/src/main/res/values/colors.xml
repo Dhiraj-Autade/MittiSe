@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors -->
+    <color name="primary">#388E3C</color>
+    <color name="primaryVariant">#2E7031</color>
+    <color name="primary_dark">#1B5E20</color>
+    
+    <!-- Secondary Colors -->
+    <color name="secondary">#FFC107</color>
+    <color name="secondaryVariant">#FFA000</color>
+    <color name="secondary_dark">#FF6F00</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_white">#FFFFFF</color>
+    
+    <!-- Background Colors -->
+    <color name="background">#F5F5F5</color>
+    <color name="background_dark">#121212</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="card_background">#80FFFFFF</color>
+    
+    <!-- Status Colors -->
+    <color name="success">#4CAF50</color>
+    <color name="error">#B00020</color>
+    <color name="warning">#FFC107</color>
+    <color name="info">#2196F3</color>
+    
+    <!-- Common Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
+    
+    <!-- Gradient Colors -->
+    <color name="gradient_start">#60AA39</color>
+    <color name="gradient_end">#00BFFF</color>
+    
+    <!-- New color -->
+    <color name="colorPrimary">#388E3C</color>
+    
+    <!-- New colors for Material Design -->
+    <color name="onPrimary">#FFFFFF</color>
+    <color name="onSecondary">#000000</color>
+    <color name="onBackground">#000000</color>
+    <color name="onSurface">#000000</color>
+    <color name="onError">#FFFFFF</color>
+    <color name="accent">#4CAF50</color>
+    <color name="cardGradientStart">#A8E063</color>
+    <color name="cardGradientEnd">#56AB2F</color>
+</resources>

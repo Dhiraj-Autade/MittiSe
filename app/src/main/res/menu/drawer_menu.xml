@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_home"
+            android:title="Home" />
+        <item
+            android:id="@+id/nav_weather"
+            android:icon="@drawable/ic_weather"
+            android:title="Weather Forecast" />
+        <item
+            android:id="@+id/nav_crop_calendar"
+            android:icon="@drawable/ic_calendar"
+            android:title="Crop Calendar" />
+        <item
+            android:id="@+id/nav_soil_test"
+            android:icon="@drawable/ic_soil"
+            android:title="Soil Testing" />
+        <item
+            android:id="@+id/nav_articles"
+            android:icon="@drawable/ic_news"
+            android:title="Articles &amp; News" />
+    </group>
+
+    <item android:title="Support">
+        <menu>
+            <item
+                android:id="@+id/nav_help"
+                android:icon="@drawable/ic_help"
+                android:title="Help &amp; Support" />
+            <item
+                android:id="@+id/nav_feedback"
+                android:icon="@drawable/ic_feedback"
+                android:title="Send Feedback" />
+            <item
+                android:id="@+id/nav_about"
+                android:icon="@drawable/ic_info"
+                android:title="About" />
+        </menu>
+    </item>
+</menu> 

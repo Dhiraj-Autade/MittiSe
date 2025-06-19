@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/navigation_marketplace">
+
+    <fragment
+        android:id="@+id/navigation_marketplace"
+        android:name="com.example.mittise.ui.marketplace.MarketplaceFragment"
+        android:label="Marketplace" />
+
+    <fragment
+        android:id="@+id/navigation_schemes"
+        android:name="com.example.mittise.ui.schemes.SchemesFragment"
+        android:label="Government Schemes" />
+
+    <fragment
+        android:id="@+id/navigation_advisor"
+        android:name="com.example.mittise.ui.advisor.AdvisorFragment"
+        android:label="Crop Advisor" />
+
+    <fragment
+        android:id="@+id/navigation_weather"
+        android:name="com.example.mittise.ui.weather.WeatherFragment"
+        android:label="Weather &amp; Prices" />
+
+    <fragment
+        android:id="@+id/navigation_profile"
+        android:name="com.example.mittise.ui.profile.ProfileFragment"
+        android:label="Profile" />
+
+</navigation> 

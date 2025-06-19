@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MittiSe</string>
+    <string name="category_icon">Category Icon</string>
+    <string name="update_icon">Update Icon</string>
+    <string name="update_image">Update image</string>
+</resources>

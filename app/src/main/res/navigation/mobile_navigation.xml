@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@id/navigation_dashboard">
+
+    <fragment
+        android:id="@+id/navigation_dashboard"
+        android:name="com.example.mittise.ui.dashboard.DashboardFragment"
+        android:label="Dashboard">
+        <action
+            android:id="@+id/action_dashboard_to_weather"
+            app:destination="@id/navigation_weather"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_marketplace"
+        android:name="com.example.mittise.ui.marketplace.MarketplaceFragment"
+        android:label="Marketplace">
+        <action
+            android:id="@+id/action_marketplace_to_product"
+            app:destination="@id/navigation_product_details"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_apmc"
+        android:name="com.example.mittise.ui.apmc.ApmcFragment"
+        android:label="APMC Prices" />
+
+    <fragment
+        android:id="@+id/navigation_social"
+        android:name="com.example.mittise.ui.social.SocialFragment"
+        android:label="Social">
+        <action
+            android:id="@+id/action_social_to_post"
+            app:destination="@id/navigation_post_details"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_profile"
+        android:name="com.example.mittise.ui.profile.ProfileFragment"
+        android:label="Profile">
+        <action
+            android:id="@+id/action_profile_to_edit"
+            app:destination="@id/navigation_edit_profile"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_product_details"
+        android:name="com.example.mittise.ui.marketplace.ProductDetailsFragment"
+        android:label="Product Details" />
+
+    <fragment
+        android:id="@+id/navigation_post_details"
+        android:name="com.example.mittise.ui.social.PostDetailsFragment"
+        android:label="Post Details" />
+
+    <fragment
+        android:id="@+id/navigation_edit_profile"
+        android:name="com.example.mittise.ui.profile.EditProfileFragment"
+        android:label="Edit Profile" />
+
+    <fragment
+        android:id="@+id/navigation_weather"
+        android:name="com.example.mittise.ui.weather.WeatherFragment"
+        android:label="Weather" />
+
+    <fragment
+        android:id="@+id/navigation_articles"
+        android:name="com.example.mittise.ui.dashboard.ArticlesFragment"
+        android:label="Articles &amp; News" />
+    <fragment
+        android:id="@+id/navigation_crop_calendar"
+        android:name="com.example.mittise.ui.dashboard.CropCalendarFragment"
+        android:label="Crop Calendar" />
+    <fragment
+        android:id="@+id/navigation_soil_testing"
+        android:name="com.example.mittise.ui.dashboard.SoilTestingFragment"
+        android:label="Soil Testing" />
+    <fragment
+        android:id="@+id/navigation_help"
+        android:name="com.example.mittise.ui.dashboard.HelpFragment"
+        android:label="Help &amp; Support" />
+    <fragment
+        android:id="@+id/navigation_feedback"
+        android:name="com.example.mittise.ui.dashboard.FeedbackFragment"
+        android:label="Send Feedback" />
+    <fragment
+        android:id="@+id/navigation_about"
+        android:name="com.example.mittise.ui.dashboard.AboutFragment"
+        android:label="About" />
+</navigation> 
