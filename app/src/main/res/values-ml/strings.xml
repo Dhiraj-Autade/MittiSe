@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">മിട്ടിസെ</string>
+    
+    <!-- Navigation -->
+    <string name="dashboard">ഡാഷ്ബോർഡ്</string>
+    <string name="marketplace">മാർക്കറ്റ്പ്ലേസ്</string>
+    <string name="apmc">എപിഎംസി</string>
+    <string name="social">സോഷ്യൽ</string>
+    <string name="profile">പ്രൊഫൈൽ</string>
+    <string name="weather">കാലാവസ്ഥ</string>
+    <string name="advisor">ഉപദേശകൻ</string>
+    <string name="schemes">പദ്ധതികൾ</string>
+    <string name="crop_calendar">ഫസൽ കലണ്ടർ</string>
+    <string name="soil_testing">മണ്ണ് പരിശോധന</string>
+    <string name="help">സഹായം</string>
+    <string name="feedback">ഫീഡ്ബാക്ക്</string>
+    <string name="about">കുറിച്ച്</string>
+    <string name="articles">ലേഖനങ്ങൾ</string>
+    <string name="language">ഭാഷ</string>
+    <string name="settings">ക്രമീകരണങ്ങൾ</string>
+    
+    <!-- Categories -->
+    <string name="category_seeds">വിത്തുകൾ</string>
+    <string name="category_fertilizers">വളങ്ങൾ</string>
+    <string name="category_equipment">ഉപകരണങ്ങൾ</string>
+    <string name="category_pesticides">കീടനാശിനികൾ</string>
+    
+    <!-- Updates -->
+    <string name="updates_title">പുതിയ വിത്തുകൾ ലഭ്യമാണ്</string>
+    <string name="updates_subtitle">ഉയർന്ന ഗുണമേന്മയുള്ള വിത്തുകൾ</string>
+    <string name="weather_title">കാലാവസ്ഥ മുന്നറിയിപ്പ്</string>
+    
+    <!-- Marketplace -->
+    <string name="marketplace_title">കാർഷിക മാർക്കറ്റ്പ്ലേസ്</string>
+    <string name="farmer_product_registration_title">ഉത്പന്ന രജിസ്ട്രേഷൻ</string>
+    <string name="farmer_product_name">ഉത്പന്നത്തിന്റെ പേര്</string>
+    <string name="product_type">ഉത്പന്ന തരം</string>
+    <string name="farmer_product_quantity">അളവ്</string>
+    <string name="unit">യൂണിറ്റ്</string>
+    <string name="farmer_product_price">അനുമാനിക്കുന്ന വില</string>
+    <string name="price_unit">വില യൂണിറ്റ്</string>
+    <string name="farmer_product_description">വിവരണം</string>
+    <string name="farmer_name">കർഷകന്റെ പേര്</string>
+    <string name="farmer_product_contact">ബന്ധപ്പെടാനുള്ള വിവരങ്ങൾ</string>
+    <string name="farmer_product_location">സ്ഥലം</string>
+    
+    <!-- Language Selection -->
+    <string name="select_language">ഭാഷ തിരഞ്ഞെടുക്കുക</string>
+    <string name="language_english">English</string>
+    <string name="language_hindi">हिंदी</string>
+    <string name="language_marathi">मराठी</string>
+    <string name="language_tamil">தமிழ்</string>
+    <string name="language_telugu">తెలుగు</string>
+    <string name="language_malayalam">മലയാളം</string>
+    <string name="language_changed">ഭാഷ മാറ്റി</string>
+    <string name="restart_app_message">മാറ്റങ്ങൾ പ്രാബല്യത്തിൽ വരാൻ ആപ്പ് പുനരാരംഭിക്കുക</string>
+    
+    <!-- Common -->
+    <string name="cancel">റദ്ദാക്കുക</string>
+    <string name="save">സൂക്ഷിക്കുക</string>
+    <string name="edit">എഡിറ്റ്</string>
+    <string name="delete">ഇല്ലാതാക്കുക</string>
+    <string name="view_all">എല്ലാം കാണുക</string>
+    <string name="logout">ലോഗൗട്ട്</string>
+    <string name="notifications">അറിയിപ്പുകൾ</string>
+    <string name="menu">മെനു</string>
+    
+    <!-- Weather -->
+    <string name="weather_humidity">ആർദ്രത</string>
+    <string name="weather_wind">കാറ്റ്</string>
+    <string name="weather_temperature">താപനില</string>
+    
+    <!-- Profile -->
+    <string name="edit_profile">പ്രൊഫൈൽ എഡിറ്റ്</string>
+    <string name="full_name">പൂർണ്ണ നാമം</string>
+    <string name="email">ഇമെയിൽ</string>
+    <string name="phone">ഫോൺ</string>
+    <string name="address">വിലാസം</string>
+    <string name="farmer_id">കർഷക ഐഡി</string>
+    
+    <!-- APMC -->
+    <string name="apmc_title">കാർഷിക ഉത്പന്ന വിപണി കമ്മിറ്റി</string>
+    <string name="apmc_subtitle">ഔദ്യോഗിക വിപണി വിലകൾ</string>
+    
+    <!-- Social -->
+    <string name="social_title">കർഷക സമൂഹം</string>
+    <string name="social_subtitle">അനുഭവങ്ങൾ പങ്കുവെയ്ക്കുക</string>
+    
+    <!-- Schemes -->
+    <string name="schemes_title">സർക്കാർ പദ്ധതികൾ</string>
+    <string name="schemes_subtitle">കർഷകർക്കുള്ള സഹായം</string>
+    
+    <!-- Advisor -->
+    <string name="advisor_title">കാർഷിക ഉപദേശകൻ</string>
+    <string name="advisor_subtitle">വിദഗ്ധ ഉപദേശം</string>
+    
+    <!-- Help -->
+    <string name="help_title">സഹായം</string>
+    <string name="help_subtitle">ആപ്പ് എങ്ങനെ ഉപയോഗിക്കാം</string>
+    
+    <!-- Feedback -->
+    <string name="feedback_title">ഫീഡ്ബാക്ക്</string>
+    <string name="feedback_subtitle">നിങ്ങളുടെ അഭിപ്രായം പങ്കുവെയ്ക്കുക</string>
+    
+    <!-- About -->
+    <string name="about_title">കുറിച്ച്</string>
+    <string name="about_subtitle">മിട്ടിസെ ആപ്പ്</string>
+    
+    <!-- Articles -->
+    <string name="articles_title">ലേഖനങ്ങൾ</string>
+    <string name="articles_subtitle">കാർഷിക വാർത്തകൾ</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">ക്രമീകരണങ്ങൾ</string>
+    <string name="settings_subtitle">ആപ്പ് ക്രമീകരണങ്ങൾ</string>
+    
+    <!-- Product Types -->
+    <string name="product_type_fruit">പഴം</string>
+    <string name="product_type_vegetable">പച്ചക്കറി</string>
+    <string name="product_type_grain">ധാന്യം</string>
+    <string name="product_type_pulse">പയർ</string>
+    <string name="product_type_spice">മസാല</string>
+    <string name="product_type_other">മറ്റുള്ളവ</string>
+    
+    <!-- Units -->
+    <string name="unit_kg">കിലോ</string>
+    <string name="unit_ton">ടൺ</string>
+    <string name="unit_quintal">ക്വിന്റൽ</string>
+    <string name="unit_dozen">ഡസൻ</string>
+    <string name="unit_piece">കഷണം</string>
+    
+    <!-- Price Units -->
+    <string name="price_unit_per_kg">കിലോയ്ക്ക്</string>
+    <string name="price_unit_per_ton">ടണ്ണിന്</string>
+    <string name="price_unit_per_quintal">ക്വിന്റലിന്</string>
+    <string name="price_unit_per_dozen">ഡസനിന്</string>
+    <string name="price_unit_per_piece">കഷണത്തിന്</string>
+    
+    <!-- Camera and Gallery -->
+    <string name="camera">ക്യാമറ</string>
+    <string name="gallery">ഗാലറി</string>
+    <string name="add_product">നിങ്ങളുടെ ഉത്പന്നം രജിസ്ടർ ചെയ്യുക</string>
+    <string name="no_products_available">ഉത്പന്നങ്ങൾ ലഭ്യമല്ല</string>
+    <string name="be_first_to_register">ആദ്യത്തെ രജിസ്ടർ ചെയ്യുന്നയാൾ ആകൂ!</string>
+    <string name="available">ലഭ്യമാണ്</string>
+</resources> 
