@@ -1,7 +1,333 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MittiSe</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_weather">Weather Forecast</string>
+    <string name="nav_crop_calendar">Crop Calendar</string>
+    <string name="nav_soil_test">Soil Testing</string>
+    <string name="nav_articles">Articles &amp; News</string>
+    <string name="nav_help">Help &amp; Support</string>
+    <string name="nav_feedback">Send Feedback</string>
+    <string name="nav_about">About</string>
+    <string name="nav_language">Language</string>
+    <string name="nav_advisor">Advisor</string>
+    <string name="nav_schemes">Schemes</string>
+    <string name="nav_product_details">Product Details</string>
+    <string name="nav_post_details">Post Details</string>
+    <string name="nav_support">Support</string>
+    
+    <!-- Dashboard -->
+    <string name="dashboard_title">Dashboard</string>
+    <string name="dashboard_welcome">Welcome to MittiSe</string>
+    <string name="dashboard_quick_actions">Quick Actions</string>
+    <string name="dashboard_weather">Weather</string>
+    <string name="dashboard_marketplace">Marketplace</string>
+    <string name="dashboard_apmc">APMC Prices</string>
+    <string name="dashboard_social">Community</string>
+    <string name="dashboard_profile">Profile</string>
+    
+    <!-- Weather -->
+    <string name="weather_title">Weather Forecast</string>
+    <string name="weather_current">Current Weather</string>
+    <string name="weather_temperature">Temperature</string>
+    <string name="weather_humidity">Humidity</string>
+    <string name="weather_wind">Wind Speed</string>
+    <string name="weather_forecast">5-Day Forecast</string>
+    
+    <!-- Marketplace -->
+    <string name="marketplace_title">E-commerce</string>
+    <string name="marketplace_search_hint">Search products...</string>
+    <string name="marketplace_categories">Categories</string>
+    <string name="marketplace_products">Products</string>
+    <string name="marketplace_add_to_cart">Add to Cart</string>
+    <string name="marketplace_buy_now">Buy Now</string>
+    <string name="marketplace_price">Price</string>
+    <string name="marketplace_quantity">Quantity</string>
+    
+    <!-- APMC -->
+    <string name="apmc_title">APMC Prices</string>
+    <string name="apmc_subtitle">Agricultural Market Prices</string>
+    <string name="apmc_select_crop">Select Crop</string>
+    <string name="apmc_current_price">Current Price</string>
+    <string name="apmc_market">Market</string>
+    <string name="apmc_date">Date</string>
+    
+    <!-- Social -->
+    <string name="social_title">Community</string>
+    <string name="social_subtitle">Connect with fellow farmers</string>
+    <string name="social_post_hint">Share your farming experience...</string>
+    <string name="social_post">Post</string>
+    <string name="social_like">Like</string>
+    <string name="social_comment">Comment</string>
+    <string name="social_share">Share</string>
+    
+    <!-- Profile -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_edit">Edit Profile</string>
+    <string name="profile_name">Name</string>
+    <string name="profile_email">Email</string>
+    <string name="profile_phone">Phone</string>
+    <string name="profile_location">Location</string>
+    <string name="profile_save">Save</string>
+    <string name="profile_cancel">Cancel</string>
+    <string name="profile_posts">Posts</string>
+    <string name="profile_followers">Followers</string>
+    <string name="profile_following">Following</string>
+    <string name="profile_settings">Settings</string>
+    <string name="profile_notifications">Notifications</string>
+    <string name="profile_privacy">Privacy</string>
+    <string name="profile_security">Security</string>
+    <string name="profile_help">Help &amp; Support</string>
+    <string name="profile_about">About</string>
+    <string name="profile_logout">Logout</string>
+    
+    <!-- Profile Editing -->
+    <string name="profile_edit_name">Edit Name</string>
+    <string name="profile_edit_location">Edit Location</string>
+    <string name="profile_edit_picture">Edit Picture</string>
+    <string name="profile_name_hint">Enter your name</string>
+    <string name="profile_location_hint">Enter your location</string>
+    <string name="profile_open_maps">Open in Maps</string>
+    <string name="profile_camera">Camera</string>
+    <string name="profile_gallery">Gallery</string>
+    <string name="profile_remove_picture">Remove Picture</string>
+    <string name="profile_picture_updated">Profile picture updated</string>
+    <string name="profile_name_updated">Name updated successfully</string>
+    <string name="profile_location_updated">Location updated successfully</string>
+    
+    <!-- Language Selection -->
+    <string name="language_title">Select Language</string>
+    <string name="language_english">English</string>
+    <string name="language_hindi">हिंदी</string>
+    <string name="language_marathi">मराठी</string>
+    <string name="language_tamil">தமிழ்</string>
+    <string name="language_telugu">తెలుగు</string>
+    <string name="language_apply">Apply</string>
+    <string name="language_cancel">Cancel</string>
+    <string name="language_restart_required">App restart required for language change</string>
+    <string name="language_restart_now">Restart Now</string>
+    <string name="language_restart_later">Restart Later</string>
+    <string name="language_choose_hint">Choose your preferred language for the app</string>
+    
+    <!-- Common -->
+    <string name="loading">Loading...</string>
+    <string name="error_occurred">An error occurred</string>
+    <string name="retry">Retry</string>
+    <string name="ok">OK</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="back">Back</string>
+    <string name="next">Next</string>
+    <string name="done">Done</string>
+    
+    <!-- Categories -->
     <string name="category_icon">Category Icon</string>
+    <string name="category_seeds">Seeds</string>
+    <string name="category_fertilizers">Fertilizers</string>
+    <string name="category_pesticides">Pesticides</string>
+    <string name="category_equipment">Equipment</string>
+    
+    <!-- Updates -->
     <string name="update_icon">Update Icon</string>
     <string name="update_image">Update image</string>
+    <string name="updates_title">Latest Updates</string>
+    <string name="updates_subtitle">Stay informed with latest farming news</string>
+    
+    <!-- About -->
+    <string name="about_title">About MittiSe</string>
+    <string name="about_description">MittiSe is a one-stop app for Indian farmers, providing e-commerce, APMC prices, weather, community, and more.</string>
+    <string name="about_subtitle">About MittiSe App</string>
+    
+    <!-- Help -->
+    <string name="help_title">Help &amp; Support</string>
+    <string name="help_description">For any queries or support, contact us at: support@mittise.com</string>
+    <string name="help_subtitle">How to use the app</string>
+    
+    <!-- Feedback -->
+    <string name="feedback_title">Send Feedback</string>
+    <string name="feedback_description">We value your feedback! Please email us at feedback@mittise.com.</string>
+    <string name="feedback_subtitle">Share your feedback</string>
+    
+    <!-- Fragment Placeholders -->
+    <string name="apmc_fragment_title">APMC Fragment</string>
+    <string name="social_fragment_title">Social Fragment</string>
+    <string name="edit_profile_fragment_title">Edit Profile Fragment</string>
+    <string name="post_details_fragment_title">Post Details Fragment</string>
+    
+    <!-- Farmer Product Registration -->
+    <string name="farmer_product_registration_title">Register Your Product</string>
+    <string name="product_image">Product Image</string>
+    <string name="camera">Camera</string>
+    <string name="gallery">Gallery</string>
+    <string name="product_details">Product Details</string>
+    <string name="product_name">Product Name</string>
+    <string name="product_type">Product Type</string>
+    <string name="quantity">Quantity</string>
+    <string name="unit">Unit</string>
+    <string name="expected_price">Expected Price</string>
+    <string name="price_unit">Price Unit</string>
+    <string name="product_description">Product Description</string>
+    <string name="farmer_details">Farmer Details</string>
+    <string name="farmer_name">Farmer Name</string>
+    <string name="farmer_contact">Farmer Contact</string>
+    <string name="farm_location">Farm Location</string>
+    <string name="register_product">Register Product</string>
+    <string name="call_farmer">Call Farmer</string>
+    <string name="view_location">View Location</string>
+    <string name="farmer_products">Farmer Products</string>
+    <string name="add_product">Add Product</string>
+    
+    <!-- Missing strings from build warnings -->
+    <string name="farmer_product_contact">Contact</string>
+    <string name="farmer_product_contact_farmer">Contact Farmer</string>
+    <string name="farmer_product_contact_hint">Enter contact number</string>
+    <string name="farmer_product_description">Description</string>
+    <string name="farmer_product_description_hint">Enter product description</string>
+    <string name="farmer_product_details_title">Product Details</string>
+    <string name="farmer_product_location">Location</string>
+    <string name="farmer_product_location_hint">Enter farm location</string>
+    <string name="farmer_product_name">Product Name</string>
+    <string name="farmer_product_name_hint">Enter product name</string>
+    <string name="farmer_product_price">Price</string>
+    <string name="farmer_product_price_hint">Enter expected price</string>
+    <string name="farmer_product_quantity">Quantity</string>
+    <string name="farmer_product_quantity_hint">Enter quantity</string>
+    <string name="farmer_product_register">Register</string>
+    <string name="farmer_product_success">Product registered successfully</string>
+    
+    <!-- Enhanced Marketplace -->
+    <string name="farmer_product">Farmer Product</string>
+    <string name="available_quantity">Available: %1$s %2$s</string>
+    <string name="product_rating">Rating: %1$.1f</string>
+    <string name="verified_seller">Verified Seller</string>
+    <string name="contact_farmer">Contact Farmer</string>
+    <string name="view_on_map">View on Map</string>
+    <string name="add_to_cart">Add to Cart</string>
+    <string name="buy_now">Buy Now</string>
+    <string name="seller_details">Seller Details</string>
+    <string name="product_specifications">Product Specifications</string>
+    <string name="delivery_info">Delivery Information</string>
+    <string name="payment_options">Payment Options</string>
+    <string name="related_products">Related Products</string>
+    <string name="filter_products">Filter Products</string>
+    <string name="sort_by">Sort By</string>
+    <string name="price_low_to_high">Price: Low to High</string>
+    <string name="price_high_to_low">Price: High to Low</string>
+    <string name="newest_first">Newest First</string>
+    <string name="rating">Rating</string>
+    <string name="distance">Distance</string>
+    <string name="show_farmer_products">Show Farmer Products</string>
+    <string name="hide_farmer_products">Hide Farmer Products</string>
+    <string name="marketplace_empty">No products found</string>
+    <string name="marketplace_empty_message">Try adjusting your search or filters</string>
+    
+    <!-- Drawer Navigation -->
+    <string name="dashboard">Dashboard</string>
+    <string name="marketplace">Marketplace</string>
+    <string name="apmc">APMC</string>
+    <string name="social">Social</string>
+    <string name="profile">Profile</string>
+    <string name="weather">Weather</string>
+    <string name="advisor">Advisor</string>
+    <string name="schemes">Schemes</string>
+    <string name="crop_calendar">Crop Calendar</string>
+    <string name="soil_testing">Soil Testing</string>
+    <string name="help">Help</string>
+    <string name="feedback">Feedback</string>
+    <string name="about">About</string>
+    <string name="articles">Articles</string>
+    <string name="language">Language</string>
+    <string name="settings">Settings</string>
+    <string name="logout">Logout</string>
+    <string name="notifications">Notifications</string>
+    <string name="menu">Menu</string>
+    
+    <!-- Language Selection -->
+    <string name="select_language">Select Language</string>
+    <string name="language_malayalam">മലയാളം</string>
+    <string name="language_changed">Language Changed</string>
+    <string name="restart_app_message">Please restart the app for changes to take effect</string>
+    <string name="language_change_title">Language Change</string>
+    <string name="language_changing_message">Changing language... Please wait</string>
+    <string name="language_tap_message">Tap a language to change it. The app will restart automatically.</string>
+    <string name="current_language">Current Language</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_subtitle">App Settings</string>
+    <string name="privacy_security">Privacy &amp; Security</string>
+    <string name="manage_notifications">Manage notification preferences</string>
+    <string name="manage_privacy">Manage privacy settings</string>
+    <string name="app_version">App version and information</string>
+    
+    <!-- Advisor -->
+    <string name="advisor_title">Agricultural Advisor</string>
+    <string name="advisor_subtitle">Expert Advice</string>
+    
+    <!-- Schemes -->
+    <string name="schemes_title">Government Schemes</string>
+    <string name="schemes_subtitle">Help for Farmers</string>
+    
+    <!-- Product Types -->
+    <string name="product_type_fruit">Fruit</string>
+    <string name="product_type_vegetable">Vegetable</string>
+    <string name="product_type_grain">Grain</string>
+    <string name="product_type_pulse">Pulse</string>
+    <string name="product_type_spice">Spice</string>
+    <string name="product_type_other">Other</string>
+    
+    <!-- Units -->
+    <string name="unit_kg">kg</string>
+    <string name="unit_ton">ton</string>
+    <string name="unit_quintal">quintal</string>
+    <string name="unit_dozen">dozen</string>
+    <string name="unit_piece">piece</string>
+    
+    <!-- Price Units -->
+    <string name="price_unit_per_kg">per kg</string>
+    <string name="price_unit_per_ton">per ton</string>
+    <string name="price_unit_per_quintal">per quintal</string>
+    <string name="price_unit_per_dozen">per dozen</string>
+    <string name="price_unit_per_piece">per piece</string>
+    
+    <!-- Marketplace Enhanced -->
+    <string name="no_products_available">No products available</string>
+    <string name="be_first_to_register">Be the first to register your product!</string>
+    <string name="available">Available</string>
+    <string name="register_your_product">Register Your Product</string>
+    
+    <!-- New strings from the code block -->
+    <string name="address">Address</string>
+    <string name="articles_subtitle">Agriculture News</string>
+    <string name="articles_title">Articles</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="email">Email</string>
+    <string name="farmer_id">Farmer ID</string>
+    <string name="full_name">Full Name</string>
+    <string name="phone">Phone</string>
+    <string name="save">Save</string>
+    <string name="view_all">View All</string>
+
+    <!-- Chatbot (formerly Social) -->
+    <string name="chatbot_title">AI Assistant</string>
+    <string name="chatbot_subtitle">Your farming companion</string>
+    <string name="chatbot_welcome_title">Hello! I\'m your AI farming assistant</string>
+    <string name="chatbot_welcome_message">I can help you with:\n• Crop recommendations\n• Weather advice\n• Pest control tips\n• Market prices\n• Farming techniques\n• And much more!</string>
+    <string name="chatbot_suggestions">Try asking me something like:\n\"What crops are best for this season?\"\n\"How to control pests in tomatoes?\"\n\"What\'s the weather forecast?\"</string>
+    <string name="chatbot_input_hint">Type your question...</string>
+    <string name="chatbot_listening_hint">Listening...</string>
+    <string name="chatbot_send">Send</string>
+    <string name="chatbot_mic">Start Recording</string>
+    <string name="chatbot_mic_stop">Stop Recording</string>
+    <string name="chatbot_speak">Speak</string>
+    <string name="chatbot_typing">AI is typing...</string>
+    <string name="chatbot_just_now">Just now</string>
+    <string name="chatbot_minutes_ago">%1$dm ago</string>
+    <string name="chatbot_hours_ago">%1$dh ago</string>
+    <string name="chatbot_days_ago">%1$dd ago</string>
 </resources>

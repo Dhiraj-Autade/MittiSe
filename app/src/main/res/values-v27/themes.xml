@@ -64,6 +64,7 @@
 
         <!-- Enable window content transitions -->
         <item name="android:windowActivityTransitions">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
     </style>
 
     <color name="primary_dark">#003300</color>

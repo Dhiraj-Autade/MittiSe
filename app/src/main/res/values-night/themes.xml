@@ -16,7 +16,7 @@
         <!-- Customize your theme here. -->
         <item name="android:windowBackground">@color/background_dark</item>
         <item name="android:navigationBarColor">@color/background_dark</item>
-        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
         
         <!-- Material3 specific attributes -->
         <item name="materialButtonStyle">@style/Widget.Material3.Button</item>
@@ -37,7 +37,6 @@
         <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Material3.MediumComponent</item>
         <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.Material3.LargeComponent</item>
         <item name="android:windowActivityTransitions">true</item>
-        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
         <!-- Night-specific color overrides (example) -->
         <item name="colorOnSurface">@color/white</item>
         <item name="colorSurface">@color/background_dark</item>

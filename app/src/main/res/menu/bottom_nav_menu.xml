@@ -3,25 +3,25 @@
     <item
         android:id="@+id/navigation_dashboard"
         android:icon="@drawable/ic_dashboard"
-        android:title="Dashboard" />
+        android:title="@string/dashboard_title" />
     
     <item
         android:id="@+id/navigation_marketplace"
         android:icon="@drawable/ic_marketplace"
-        android:title="E-commerce" />
+        android:title="@string/marketplace_title" />
     
     <item
         android:id="@+id/navigation_apmc"
         android:icon="@drawable/ic_apmc"
-        android:title="APMC Prices" />
+        android:title="@string/apmc_title" />
     
     <item
         android:id="@+id/navigation_social"
         android:icon="@drawable/ic_social"
-        android:title="Social" />
+        android:title="@string/social_title" />
     
     <item
         android:id="@+id/navigation_profile"
         android:icon="@drawable/ic_profile"
-        android:title="Profile" />
+        android:title="@string/profile_title" />
 </menu> 

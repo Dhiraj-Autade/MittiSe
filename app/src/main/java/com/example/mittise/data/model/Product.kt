@@ -1,5 +1,9 @@
 package com.example.mittise.data.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class Product(
     val id: String,
     val name: String,
@@ -15,4 +19,4 @@ data class Product(
     val rating: Float,
     val isVerified: Boolean,
     val createdAt: Long
-) 
+) : Parcelable 
