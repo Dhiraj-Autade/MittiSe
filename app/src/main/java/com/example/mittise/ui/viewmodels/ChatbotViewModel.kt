@@ -19,8 +19,8 @@ import android.os.Bundle
 
 class ChatbotViewModel : ViewModel() {
     
-    // Use real Gemini API with the provided key
-    private val aiService: AIService = GeminiService("AIzaSyB-XRYEVpC2rcTSlgoc6k82Y9gJDqZDI6Y")
+    // Use real Gemini API with the provided key and latest model
+    private val aiService: AIService = GeminiService("AIzaSyD_TWERer7pOCqxWPV0fNpstLON2u1KrAk")
     
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
@@ -34,6 +34,9 @@ class ChatbotViewModel : ViewModel() {
     private val _isSpeaking = MutableStateFlow(false)
     val isSpeaking: StateFlow<Boolean> = _isSpeaking.asStateFlow()
     
+    private val _recognizedText = MutableStateFlow("")
+    val recognizedText: StateFlow<String> = _recognizedText.asStateFlow()
+    
     private var speechRecognizer: SpeechRecognizer? = null
     private var context: Context? = null
     
@@ -43,15 +46,25 @@ class ChatbotViewModel : ViewModel() {
     }
     
     private fun initializeSpeechRecognizer() {
-        if (SpeechRecognizer.isRecognitionAvailable(context!!)) {
+        try {
+            if (context == null) {
+                android.util.Log.e("ChatbotViewModel", "Context is null, cannot initialize speech recognizer")
+                return
+            }
+            
+            if (!SpeechRecognizer.isRecognitionAvailable(context!!)) {
+                android.util.Log.e("ChatbotViewModel", "Speech recognition is not available on this device")
+                return
+            }
+            
             speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context!!)
             speechRecognizer?.setRecognitionListener(object : android.speech.RecognitionListener {
                 override fun onReadyForSpeech(params: Bundle?) {
-                    // Speech recognition is ready
+                    android.util.Log.d("ChatbotViewModel", "Speech recognition ready")
                 }
                 
                 override fun onBeginningOfSpeech() {
-                    // User started speaking
+                    android.util.Log.d("ChatbotViewModel", "Speech beginning")
                 }
                 
                 override fun onRmsChanged(rmsdB: Float) {
@@ -63,47 +76,69 @@ class ChatbotViewModel : ViewModel() {
                 }
                 
                 override fun onEndOfSpeech() {
-                    // User stopped speaking
+                    android.util.Log.d("ChatbotViewModel", "Speech ended")
                 }
                 
                 override fun onError(error: Int) {
                     _isListening.value = false
+                    android.util.Log.e("ChatbotViewModel", "Speech recognition error: $error")
+                    
                     // Handle speech recognition errors
                     when (error) {
                         SpeechRecognizer.ERROR_NO_MATCH -> {
-                            // No speech was recognized
+                            android.util.Log.e("ChatbotViewModel", "No speech was recognized")
+                            // Retry after a short delay
+                            retrySpeechRecognition()
                         }
                         SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> {
-                            // Speech input timed out
+                            android.util.Log.e("ChatbotViewModel", "Speech input timed out")
+                            // Retry after a short delay
+                            retrySpeechRecognition()
                         }
                         SpeechRecognizer.ERROR_NETWORK -> {
-                            // Network error
+                            android.util.Log.e("ChatbotViewModel", "Network error")
+                            // Retry after a longer delay for network issues
+                            retrySpeechRecognition(delay = 2000)
                         }
                         SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> {
-                            // Network timeout
+                            android.util.Log.e("ChatbotViewModel", "Network timeout")
+                            // Retry after a longer delay for network issues
+                            retrySpeechRecognition(delay = 2000)
                         }
                         SpeechRecognizer.ERROR_AUDIO -> {
-                            // Audio recording error
+                            android.util.Log.e("ChatbotViewModel", "Audio recording error")
+                            // Retry after a short delay
+                            retrySpeechRecognition()
                         }
                         SpeechRecognizer.ERROR_SERVER -> {
-                            // Server error
+                            android.util.Log.e("ChatbotViewModel", "Server error")
+                            // Retry after a longer delay for server issues
+                            retrySpeechRecognition(delay = 3000)
                         }
                         SpeechRecognizer.ERROR_CLIENT -> {
-                            // Client error
+                            android.util.Log.e("ChatbotViewModel", "Client error")
+                            // Reinitialize speech recognizer
+                            reinitializeSpeechRecognizer()
                         }
                         SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> {
-                            // Permission denied
+                            android.util.Log.e("ChatbotViewModel", "Permission denied")
                         }
                     }
                 }
                 
                 override fun onResults(results: Bundle?) {
                     _isListening.value = false
+                    android.util.Log.d("ChatbotViewModel", "Speech recognition results received")
+                    
                     val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                     if (!matches.isNullOrEmpty()) {
                         val recognizedText = matches[0]
-                        // Send the recognized text as a message
-                        sendMessage(recognizedText)
+                        android.util.Log.d("ChatbotViewModel", "Recognized text: $recognizedText")
+                        // Set the recognized text in the input field instead of sending immediately
+                        _recognizedText.value = recognizedText
+                    } else {
+                        android.util.Log.e("ChatbotViewModel", "No recognition results")
+                        retrySpeechRecognition()
                     }
                 }
                 
@@ -115,11 +150,48 @@ class ChatbotViewModel : ViewModel() {
                     // Speech recognition event
                 }
             })
+            
+            android.util.Log.d("ChatbotViewModel", "Speech recognizer initialized successfully")
+        } catch (e: Exception) {
+            android.util.Log.e("ChatbotViewModel", "Error initializing speech recognizer: ${e.message}", e)
         }
+    }
+    
+    private fun retrySpeechRecognition(delay: Long = 1000) {
+        viewModelScope.launch {
+            delay(delay)
+            if (_isListening.value) {
+                android.util.Log.d("ChatbotViewModel", "Retrying speech recognition...")
+                startSpeechRecognition()
+            }
+        }
+    }
+    
+    private fun reinitializeSpeechRecognizer() {
+        viewModelScope.launch {
+            try {
+                speechRecognizer?.destroy()
+                speechRecognizer = null
+                delay(500)
+                initializeSpeechRecognizer()
+                if (_isListening.value) {
+                    startSpeechRecognition()
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("ChatbotViewModel", "Error reinitializing speech recognizer: ${e.message}", e)
+            }
+        }
+    }
+    
+    fun clearRecognizedText() {
+        _recognizedText.value = ""
     }
     
     fun sendMessage(text: String) {
         if (text.isBlank()) return
+        
+        // Clear recognized text
+        _recognizedText.value = ""
         
         // Add user message
         val userMessage = ChatMessage(
@@ -159,11 +231,30 @@ class ChatbotViewModel : ViewModel() {
     }
     
     fun toggleVoiceInput() {
-        if (_isListening.value) {
-            stopSpeechRecognition()
-        } else {
-            startSpeechRecognition()
+        try {
+            if (_isListening.value) {
+                android.util.Log.d("ChatbotViewModel", "Stopping speech recognition")
+                stopSpeechRecognition()
+            } else {
+                android.util.Log.d("ChatbotViewModel", "Starting speech recognition")
+                startSpeechRecognition()
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("ChatbotViewModel", "Error toggling voice input: ${e.message}", e)
+            _isListening.value = false
         }
+    }
+    
+    /**
+     * Check if microphone permission is granted
+     */
+    fun isMicrophonePermissionGranted(): Boolean {
+        return context?.let { ctx ->
+            android.Manifest.permission.RECORD_AUDIO.let { permission ->
+                android.content.pm.PackageManager.PERMISSION_GRANTED == 
+                ctx.checkSelfPermission(permission)
+            }
+        } ?: false
     }
     
     fun speakMessage(message: String) {
@@ -185,22 +276,40 @@ class ChatbotViewModel : ViewModel() {
     }
     
     private fun startSpeechRecognition() {
-        if (context == null) return
-        
-        if (speechRecognizer == null) {
-            initializeSpeechRecognizer()
+        try {
+            if (context == null) {
+                android.util.Log.e("ChatbotViewModel", "Context is null, cannot start speech recognition")
+                return
+            }
+            
+            if (speechRecognizer == null) {
+                android.util.Log.d("ChatbotViewModel", "Speech recognizer is null, initializing...")
+                initializeSpeechRecognizer()
+            }
+            
+            if (speechRecognizer == null) {
+                android.util.Log.e("ChatbotViewModel", "Failed to initialize speech recognizer")
+                return
+            }
+            
+            _isListening.value = true
+            android.util.Log.d("ChatbotViewModel", "Starting speech recognition...")
+            
+            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US") // You can change this to support other languages
+                putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak now...")
+                putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+                putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+            }
+            
+            speechRecognizer?.startListening(intent)
+            android.util.Log.d("ChatbotViewModel", "Speech recognition started successfully")
+            
+        } catch (e: Exception) {
+            android.util.Log.e("ChatbotViewModel", "Error starting speech recognition: ${e.message}", e)
+            _isListening.value = false
         }
-        
-        _isListening.value = true
-        
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US") // You can change this to support other languages
-            putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak now...")
-            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
-        }
-        
-        speechRecognizer?.startListening(intent)
     }
     
     private fun stopSpeechRecognition() {
@@ -209,7 +318,7 @@ class ChatbotViewModel : ViewModel() {
     }
     
     // Method to set AI service (for testing or switching providers)
-    fun setAIService(service: AIService) {
+    fun setAIService(_service: AIService) {
         // This would be used when switching from mock to real AI service
         // For now, we'll keep the mock service
     }

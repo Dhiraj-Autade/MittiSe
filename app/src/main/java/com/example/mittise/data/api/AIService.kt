@@ -9,6 +9,8 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import org.json.JSONArray
 import java.io.IOException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * AI Service interface for chatbot functionality
@@ -132,6 +134,19 @@ class OpenAIService(private val apiKey: String) : AIService {
 class GeminiService(private val apiKey: String) : AIService {
     private val client = OkHttpClient()
     private val mediaType = "application/json".toMediaType()
+    private var currentModel = "gemini-2.5-flash" // Latest stable model as of June 2025
+    
+    /**
+     * Set the model to use for API calls
+     */
+    fun setModel(modelName: String) {
+        currentModel = modelName
+    }
+    
+    /**
+     * Get the current model being used
+     */
+    fun getCurrentModel(): String = currentModel
     
     override suspend fun getResponse(prompt: String): String {
         return try {
@@ -160,19 +175,27 @@ class GeminiService(private val apiKey: String) : AIService {
                 .put("generationConfig", generationConfig)
                 .toString()
             
-            val request = Request.Builder()
-                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=$apiKey")
-                .post(requestBody.toRequestBody(mediaType))
-                .build()
+            android.util.Log.d("GeminiService", "Using model: $currentModel")
+            android.util.Log.d("GeminiService", "Request body: $requestBody")
             
-            val response = client.newCall(request).execute()
-            val responseBody = response.body?.string()
-            
-            if (response.isSuccessful && responseBody != null) {
-                parseGeminiResponse(responseBody)
-            } else {
-                android.util.Log.e("GeminiService", "API error: ${response.code} ${response.message} body: $responseBody")
-                "Sorry, I'm having trouble connecting to the AI service right now. Please try again later."
+            return withContext(Dispatchers.IO) {
+                val request = Request.Builder()
+                    .url("https://generativelanguage.googleapis.com/v1/models/$currentModel:generateContent?key=$apiKey")
+                    .post(requestBody.toRequestBody(mediaType))
+                    .build()
+                
+                val response = client.newCall(request).execute()
+                val responseBody = response.body?.string()
+                android.util.Log.d("GeminiService", "Response code: ${response.code}")
+                android.util.Log.d("GeminiService", "Response message: ${response.message}")
+                android.util.Log.d("GeminiService", "Response body: $responseBody")
+                
+                if (response.isSuccessful && responseBody != null) {
+                    parseGeminiResponse(responseBody)
+                } else {
+                    android.util.Log.e("GeminiService", "API error: ${response.code} ${response.message} body: $responseBody")
+                    "Sorry, I'm having trouble connecting to the AI service right now. Please try again later."
+                }
             }
         } catch (e: Exception) {
             android.util.Log.e("GeminiService", "Exception: ${e.message}", e)
@@ -186,6 +209,95 @@ class GeminiService(private val apiKey: String) : AIService {
         words.forEach { word ->
             emit(word + " ")
             delay(100)
+        }
+    }
+    
+    /**
+     * Test which models are available with the current API key
+     */
+    suspend fun getAvailableModels(): String {
+        return try {
+            withContext(Dispatchers.IO) {
+                val request = Request.Builder()
+                    .url("https://generativelanguage.googleapis.com/v1/models?key=$apiKey")
+                    .get()
+                    .build()
+                
+                val response = client.newCall(request).execute()
+                val responseBody = response.body?.string()
+                
+                android.util.Log.d("GeminiService", "Models response code: ${response.code}")
+                android.util.Log.d("GeminiService", "Models response body: $responseBody")
+                
+                if (response.isSuccessful && responseBody != null) {
+                    parseModelsResponse(responseBody)
+                } else {
+                    "Error getting models: ${response.code} ${response.message}"
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("GeminiService", "Exception getting models: ${e.message}", e)
+            "Error: ${e.message}"
+        }
+    }
+    
+    /**
+     * Test a specific model to see if it's available
+     */
+    suspend fun testModel(modelName: String): String {
+        return try {
+            val testPrompt = "Hello, this is a test message."
+            
+            val partsArray = JSONArray().apply {
+                put(JSONObject().put("text", testPrompt))
+            }
+            val contentsArray = JSONArray().apply {
+                put(JSONObject().put("parts", partsArray))
+            }
+            val requestBody = JSONObject()
+                .put("contents", contentsArray)
+                .toString()
+            
+            withContext(Dispatchers.IO) {
+                val request = Request.Builder()
+                    .url("https://generativelanguage.googleapis.com/v1/models/$modelName:generateContent?key=$apiKey")
+                    .post(requestBody.toRequestBody(mediaType))
+                    .build()
+                
+                val response = client.newCall(request).execute()
+                val responseBody = response.body?.string()
+                
+                android.util.Log.d("GeminiService", "Test $modelName - Response code: ${response.code}")
+                android.util.Log.d("GeminiService", "Test $modelName - Response body: $responseBody")
+                
+                if (response.isSuccessful) {
+                    "✅ Model $modelName is available and working"
+                } else {
+                    "❌ Model $modelName failed: ${response.code} ${response.message}"
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("GeminiService", "Exception testing $modelName: ${e.message}", e)
+            "❌ Model $modelName error: ${e.message}"
+        }
+    }
+    
+    private fun parseModelsResponse(responseBody: String): String {
+        return try {
+            val jsonResponse = JSONObject(responseBody)
+            val models = jsonResponse.getJSONArray("models")
+            val modelNames = mutableListOf<String>()
+            
+            for (i in 0 until models.length()) {
+                val model = models.getJSONObject(i)
+                val name = model.getString("name")
+                modelNames.add(name)
+            }
+            
+            "Available models:\n${modelNames.joinToString("\n")}"
+        } catch (e: Exception) {
+            android.util.Log.e("GeminiService", "Parse models error: ${e.message}", e)
+            "Error parsing models response: ${e.message}"
         }
     }
     

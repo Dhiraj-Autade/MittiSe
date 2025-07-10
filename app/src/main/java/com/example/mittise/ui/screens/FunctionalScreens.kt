@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.example.mittise.R
 import com.example.mittise.ui.theme.*
 import androidx.compose.ui.platform.LocalContext
@@ -29,6 +30,14 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.example.mittise.ui.viewmodels.ChatbotViewModel
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.compose.ui.graphics.vector.ImageVector
 
 // APMC Screen - Agricultural Produce Market Committee
 @Composable
@@ -103,7 +112,7 @@ fun ApmcScreen() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Info,
+                            imageVector = Icons.Filled.Info,
                             contentDescription = "Info",
                             tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(24.dp)
@@ -137,11 +146,26 @@ fun ChatbotScreen() {
     val messages by viewModel.messages.collectAsState()
     val isTyping by viewModel.isTyping.collectAsState()
     val isListening by viewModel.isListening.collectAsState()
-    val isSpeaking by viewModel.isSpeaking.collectAsState()
+    val recognizedText by viewModel.recognizedText.collectAsState()
     
     var messageText by remember { mutableStateOf("") }
     val isDark = isSystemInDarkTheme()
     val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Permission granted, can start speech recognition
+            viewModel.toggleVoiceInput()
+        }
+    }
+    
+    // Update messageText when recognizedText changes
+    LaunchedEffect(recognizedText) {
+        if (recognizedText.isNotEmpty()) {
+            messageText = recognizedText
+        }
+    }
     
     // Set context for speech recognition
     LaunchedEffect(context) {
@@ -171,7 +195,8 @@ fun ChatbotScreen() {
                 modifier = Modifier.padding(20.dp)
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Card(
                         modifier = Modifier.size(48.dp),
@@ -184,7 +209,7 @@ fun ChatbotScreen() {
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.SmartToy,
+                                imageVector = Icons.Filled.SmartToy,
                                 contentDescription = "AI Assistant",
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(24.dp)
@@ -192,7 +217,9 @@ fun ChatbotScreen() {
                         }
                     }
                     Spacer(modifier = Modifier.width(12.dp))
-                    Column {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Text(
                             text = "MittiSe AI Assistant",
                             style = MaterialTheme.typography.headlineSmall.copy(
@@ -247,9 +274,17 @@ fun ChatbotScreen() {
                 if (messageText.isNotBlank()) {
                     viewModel.sendMessage(messageText)
                     messageText = ""
+                    viewModel.clearRecognizedText()
                 }
             },
-            onVoiceClick = { viewModel.toggleVoiceInput() },
+            onVoiceClick = {
+                // Check permission before starting voice input
+                if (viewModel.isMicrophonePermissionGranted()) {
+                    viewModel.toggleVoiceInput()
+                } else {
+                    launcher.launch(android.Manifest.permission.RECORD_AUDIO)
+                }
+            },
             isListening = isListening,
             isDark = isDark
         )
@@ -342,7 +377,7 @@ fun ChatMessageItem(message: ChatMessage, isDark: Boolean, onSpeakClick: () -> U
                             modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.VolumeUp,
+                                imageVector = Icons.Filled.VolumeUp,
                                 contentDescription = "Speak",
                                 tint = textColor.copy(alpha = 0.7f),
                                 modifier = Modifier.size(16.dp)
@@ -418,7 +453,7 @@ fun ChatInputSection(
                 modifier = Modifier.size(40.dp)
             ) {
                 Icon(
-                    imageVector = if (isListening) Icons.Default.Mic else Icons.Default.MicNone,
+                    imageVector = if (isListening) Icons.Filled.Mic else Icons.Filled.MicNone,
                     contentDescription = if (isListening) "Stop Recording" else "Start Recording",
                     tint = if (isListening) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
@@ -457,7 +492,7 @@ fun ChatInputSection(
                 modifier = Modifier.size(40.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Send,
+                    imageVector = Icons.Filled.Send,
                     contentDescription = "Send",
                     tint = if (messageText.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                     modifier = Modifier.size(24.dp)
@@ -506,7 +541,7 @@ fun ProfileScreen() {
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Person,
+                                imageVector = Icons.Filled.Person,
                                 contentDescription = "Profile",
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(40.dp)
@@ -543,7 +578,7 @@ fun ProfileScreen() {
                 )
             ) {
                 Icon(
-                    imageVector = Icons.Default.Edit,
+                    imageVector = Icons.Filled.Edit,
                     contentDescription = "Edit Profile",
                     modifier = Modifier.size(18.dp)
                 )
@@ -561,17 +596,17 @@ fun ProfileScreen() {
                 ProfileStatCard(
                     title = "Posts",
                     value = "12",
-                    icon = Icons.Default.Article
+                    icon = Icons.Filled.Article
                 )
                 ProfileStatCard(
                     title = "Followers",
                     value = "45",
-                    icon = Icons.Default.People
+                    icon = Icons.Filled.People
                 )
                 ProfileStatCard(
                     title = "Following",
                     value = "23",
-                    icon = Icons.Default.People
+                    icon = Icons.Filled.People
                 )
             }
         }
@@ -585,7 +620,36 @@ fun ProfileScreen() {
 
 // Weather Screen
 @Composable
-fun WeatherScreen() {
+fun WeatherScreen(
+    weatherViewModel: com.example.mittise.ui.weather.WeatherViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+
+    // Check location permission and services on first launch and when coming back
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        weatherViewModel.checkLocationPermission(context)
+        weatherViewModel.checkLocationServicesEnabled(context)
+    }
+    // Also check location services whenever the screen resumes
+    androidx.compose.runtime.LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+            weatherViewModel.checkLocationServicesEnabled(context)
+            if (weatherViewModel.hasLocationPermission && weatherViewModel.location != null && weatherViewModel.isLocationServiceEnabled) {
+                weatherViewModel.refreshWeather()
+            }
+        }
+    }
+
+    // Show prompt if location services are OFF
+    if (!weatherViewModel.isLocationServiceEnabled) {
+        LocationServicePrompt(onEnable = {
+            val intent = android.content.Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        })
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -628,7 +692,14 @@ fun WeatherScreen() {
 
         // Current Weather
         item {
-            CurrentWeatherCard()
+            CurrentWeatherCard(weatherViewModel = weatherViewModel)
+        }
+
+        // Weather Analysis
+        if (weatherViewModel.weatherAnalysis != null) {
+            item {
+                WeatherAnalysisCard(analysis = weatherViewModel.weatherAnalysis!!)
+            }
         }
 
         // Weather Forecast
@@ -642,13 +713,92 @@ fun WeatherScreen() {
             )
         }
 
-        items(getWeatherForecast()) { forecast ->
-            WeatherForecastCard(forecast = forecast)
+        // Display live forecast data
+        if (weatherViewModel.forecastData?.forecastList != null) {
+            // Group forecast by day and take first entry for each day
+            val dailyForecasts = weatherViewModel.forecastData!!.forecastList!!.groupBy { forecast ->
+                forecast.dtTxt.split(" ")[0] // Get date part
+            }.values.map { it.first() }.take(5) // Take first 5 days
+            
+            items(dailyForecasts) { forecast ->
+                LiveWeatherForecastCard(forecast = forecast)
+            }
+        } else if (weatherViewModel.isLoading) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = "Loading forecast...",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+        } else {
+            // Show sample data if no live data
+            items(getWeatherForecast()) { forecast ->
+                WeatherForecastCard(forecast = forecast)
+            }
         }
+    }
+}
 
-        // Weather Alerts
-        item {
-            WeatherAlertsCard()
+@Composable
+fun LocationServicePrompt(onEnable: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.85f))
+            .zIndex(2f),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            elevation = CardDefaults.cardElevation(12.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.LocationOff,
+                    contentDescription = "Location Off",
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Location is turned off",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Please enable location services to get live weather updates.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = onEnable) {
+                    Text("Turn On Location")
+                }
+            }
         }
     }
 }
@@ -771,7 +921,7 @@ fun SoilTestingScreen() {
                 )
             ) {
                 Icon(
-                    imageVector = Icons.Default.Science,
+                    imageVector = Icons.Filled.Science,
                     contentDescription = "Test Soil",
                     modifier = Modifier.size(18.dp)
                 )
@@ -895,7 +1045,7 @@ fun AdvisorScreen() {
                 )
             ) {
                 Icon(
-                    imageVector = Icons.Default.Chat,
+                    imageVector = Icons.Filled.Chat,
                     contentDescription = "Ask Question",
                     modifier = Modifier.size(18.dp)
                 )
@@ -1040,18 +1190,18 @@ private fun getSampleCommunityPosts(): List<CommunityPost> = listOf(
 )
 
 private fun getProfileOptions(): List<ProfileOption> = listOf(
-    ProfileOption("Settings", Icons.Default.Settings) { },
-    ProfileOption("Notifications", Icons.Default.Notifications) { },
-    ProfileOption("Privacy", Icons.Default.Security) { },
-    ProfileOption("Help & Support", Icons.Default.Help) { }
+    ProfileOption("Settings", Icons.Filled.Settings) { },
+    ProfileOption("Notifications", Icons.Filled.Notifications) { },
+    ProfileOption("Privacy", Icons.Filled.Security) { },
+    ProfileOption("Help & Support", Icons.Filled.Help) { }
 )
 
 private fun getWeatherForecast(): List<WeatherForecast> = listOf(
-    WeatherForecast("Today", "28°C", "Sunny", Icons.Default.WbSunny),
-    WeatherForecast("Tomorrow", "26°C", "Partly Cloudy", Icons.Default.Cloud),
-    WeatherForecast("Wed", "24°C", "Rain", Icons.Default.Opacity),
-    WeatherForecast("Thu", "27°C", "Sunny", Icons.Default.WbSunny),
-    WeatherForecast("Fri", "29°C", "Sunny", Icons.Default.WbSunny)
+    WeatherForecast("Today", "28°C", "Sunny", Icons.Filled.WbSunny),
+    WeatherForecast("Tomorrow", "26°C", "Partly Cloudy", Icons.Filled.Cloud),
+    WeatherForecast("Wed", "24°C", "Rain", Icons.Filled.Opacity),
+    WeatherForecast("Thu", "27°C", "Sunny", Icons.Filled.WbSunny),
+    WeatherForecast("Fri", "29°C", "Sunny", Icons.Filled.WbSunny)
 )
 
 private fun getCropCalendarActivities(): List<CropActivity> = listOf(
@@ -1061,9 +1211,9 @@ private fun getCropCalendarActivities(): List<CropActivity> = listOf(
 )
 
 private fun getSoilTestingOptions(): List<SoilTestingOption> = listOf(
-    SoilTestingOption("pH Testing", "Check soil acidity/alkalinity", Icons.Default.Science),
-    SoilTestingOption("Nutrient Analysis", "Test NPK levels", Icons.Default.Science),
-    SoilTestingOption("Organic Matter", "Check soil organic content", Icons.Default.Science)
+    SoilTestingOption("pH Testing", "Check soil acidity/alkalinity", Icons.Filled.Science),
+    SoilTestingOption("Nutrient Analysis", "Test NPK levels", Icons.Filled.Science),
+    SoilTestingOption("Organic Matter", "Check soil organic content", Icons.Filled.Science)
 )
 
 private fun getSampleArticles(): List<Article> = listOf(
@@ -1177,7 +1327,7 @@ fun CommunityPostCard(post: CommunityPost) {
             ) {
                 IconButton(onClick = { }) {
                     Icon(
-                        imageVector = Icons.Default.Favorite,
+                        imageVector = Icons.Filled.Favorite,
                         contentDescription = "Like",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
@@ -1191,7 +1341,7 @@ fun CommunityPostCard(post: CommunityPost) {
                 Spacer(modifier = Modifier.width(16.dp))
                 IconButton(onClick = { }) {
                     Icon(
-                        imageVector = Icons.Default.Comment,
+                        imageVector = Icons.Filled.Comment,
                         contentDescription = "Comment",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
@@ -1280,7 +1430,7 @@ fun ProfileOptionCard(option: ProfileOption) {
             )
             Spacer(modifier = Modifier.weight(1f))
             Icon(
-                imageVector = Icons.Default.ChevronRight,
+                imageVector = Icons.Filled.ChevronRight,
                 contentDescription = "Navigate",
                 tint = if (isDark) Color.Black.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
@@ -1290,7 +1440,33 @@ fun ProfileOptionCard(option: ProfileOption) {
 }
 
 @Composable
-fun CurrentWeatherCard() {
+fun CurrentWeatherCard(
+    weatherViewModel: com.example.mittise.ui.weather.WeatherViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    
+    // Check location permission on first launch
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        weatherViewModel.checkLocationPermission(context)
+    }
+    
+    // Get location and weather data when permission is granted
+    androidx.compose.runtime.LaunchedEffect(weatherViewModel.hasLocationPermission) {
+        if (weatherViewModel.hasLocationPermission) {
+            weatherViewModel.getCurrentLocation(context)
+        }
+    }
+    
+    // Refresh weather data when app becomes active
+    androidx.compose.runtime.LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+            if (weatherViewModel.hasLocationPermission && weatherViewModel.location != null) {
+                weatherViewModel.refreshWeather()
+            }
+        }
+    }
+    
     EnhancedCard(
         gradientColors = GradientColors.primaryGradient,
         elevation = 8,
@@ -1303,7 +1479,7 @@ fun CurrentWeatherCard() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Default.WbSunny,
+                imageVector = Icons.Filled.WbSunny,
                 contentDescription = "Weather",
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(48.dp)
@@ -1311,20 +1487,36 @@ fun CurrentWeatherCard() {
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
-                    text = "28°C",
+                    text = when {
+                        weatherViewModel.isLoading -> "Loading..."
+                        weatherViewModel.weatherData?.main?.temp != null -> 
+                            "${weatherViewModel.weatherData!!.main!!.temp.toInt()}°C"
+                        else -> "N/A"
+                    },
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 )
                 Text(
-                    text = "Sunny",
+                    text = when {
+                        weatherViewModel.isLoading -> "Getting weather..."
+                        weatherViewModel.weatherData?.weather?.isNotEmpty() == true -> 
+                            weatherViewModel.weatherData!!.weather!![0].description.capitalize(Locale.current)
+                        else -> "Weather unavailable"
+                    },
                     style = MaterialTheme.typography.titleMedium.copy(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
                     )
                 )
                 Text(
-                    text = "Mumbai, Maharashtra",
+                    text = when {
+                        weatherViewModel.isLoading -> "Getting location..."
+                        weatherViewModel.weatherData?.name != null -> 
+                            weatherViewModel.weatherData!!.name!!
+                        weatherViewModel.error != null -> "Location error"
+                        else -> "Enable location"
+                    },
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                     )
@@ -1374,45 +1566,6 @@ fun WeatherForecastCard(forecast: WeatherForecast) {
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
-                )
-            )
-        }
-    }
-}
-
-@Composable
-fun WeatherAlertsCard() {
-    EnhancedCard(
-        gradientColors = GradientColors.warningGradient,
-        elevation = 6,
-        cornerRadius = 12
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Warning,
-                    contentDescription = "Alert",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = "Weather Alert",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Heavy rainfall expected in the next 48 hours. Plan your farming activities accordingly.",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
                 )
             )
         }
@@ -1489,7 +1642,7 @@ fun SeasonalTipsCard() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.Lightbulb,
+                    imageVector = Icons.Filled.Lightbulb,
                     contentDescription = "Tip",
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
@@ -1570,7 +1723,7 @@ fun PreviousTestResultsCard() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.History,
+                    imageVector = Icons.Filled.History,
                     contentDescription = "History",
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
@@ -1761,5 +1914,229 @@ fun simulateAIResponse(onResponse: (String) -> Unit) {
             "The weather forecast shows light rain in the next 3 days. It's a good time for sowing seeds."
         )
         onResponse(responses.random())
+    }
+} 
+
+@Composable
+fun LiveWeatherForecastCard(forecast: com.example.mittise.data.model.ForecastItem) {
+    EnhancedCard(
+        gradientColors = GradientColors.cardGradient,
+        elevation = 4,
+        cornerRadius = 12
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Weather icon based on weather condition
+            val weatherIcon = when {
+                forecast.weather.isNotEmpty() -> {
+                    when {
+                        forecast.weather[0].main.contains("Clear", ignoreCase = true) -> Icons.Filled.WbSunny
+                        forecast.weather[0].main.contains("Cloud", ignoreCase = true) -> Icons.Filled.Cloud
+                        forecast.weather[0].main.contains("Rain", ignoreCase = true) -> Icons.Filled.Opacity
+                        forecast.weather[0].main.contains("Snow", ignoreCase = true) -> Icons.Filled.AcUnit
+                        forecast.weather[0].main.contains("Thunder", ignoreCase = true) -> Icons.Filled.Thunderstorm
+                        else -> Icons.Filled.WbSunny
+                    }
+                }
+                else -> Icons.Filled.WbSunny
+            }
+            
+            Icon(
+                imageVector = weatherIcon,
+                contentDescription = forecast.weather.firstOrNull()?.description ?: "Weather",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                // Format date
+                val dateStr = try {
+                    val date = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                        .parse(forecast.dtTxt.split(" ")[0])
+                    val displayFormat = java.text.SimpleDateFormat("EEE, MMM dd", java.util.Locale.getDefault())
+                    displayFormat.format(date!!)
+                } catch (e: Exception) {
+                    forecast.dtTxt.split(" ")[0]
+                }
+                
+                Text(
+                    text = dateStr,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+                Text(
+                    text = forecast.weather.firstOrNull()?.description?.capitalize(java.util.Locale.getDefault()) ?: "Unknown",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Column(
+                horizontalAlignment = Alignment.End
+            ) {
+                Text(
+                    text = "${forecast.main.temp.toInt()}°C",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                )
+                Text(
+                    text = "Humidity: ${forecast.main.humidity}%",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+} 
+
+@Composable
+fun WeatherAnalysisCard(analysis: com.example.mittise.data.model.WeatherAnalysis) {
+    val severityColor = when (analysis.severity) {
+        "High" -> MaterialTheme.colorScheme.error
+        "Medium" -> MaterialTheme.colorScheme.tertiary
+        else -> MaterialTheme.colorScheme.primary
+    }
+    
+    val severityIcon = when (analysis.severity) {
+        "High" -> Icons.Filled.Warning
+        "Medium" -> Icons.Filled.Info
+        else -> Icons.Filled.CheckCircle
+    }
+    
+    EnhancedCard(
+        gradientColors = when (analysis.severity) {
+            "High" -> GradientColors.warningGradient
+            "Medium" -> GradientColors.tertiaryGradient
+            else -> GradientColors.successGradient
+        },
+        elevation = 8,
+        cornerRadius = 16
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = severityIcon,
+                    contentDescription = "Severity",
+                    tint = severityColor,
+                    modifier = Modifier.size(32.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        text = analysis.condition,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Severity: ${analysis.severity}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = severityColor
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Farming Advice
+            if (analysis.farmingAdvice.isNotEmpty()) {
+                AnalysisSection(
+                    title = "Farming Advice",
+                    icon = Icons.Filled.Agriculture,
+                    items = analysis.farmingAdvice
+                )
+            }
+            
+            // Crop Recommendations
+            if (analysis.cropRecommendations.isNotEmpty()) {
+                AnalysisSection(
+                    title = "Crop Recommendations",
+                    icon = Icons.Filled.LocalFlorist,
+                    items = analysis.cropRecommendations
+                )
+            }
+            
+            // Precautions
+            if (analysis.precautions.isNotEmpty()) {
+                AnalysisSection(
+                    title = "Precautions",
+                    icon = Icons.Filled.Security,
+                    items = analysis.precautions
+                )
+            }
+            
+            // Optimal Activities
+            if (analysis.optimalActivities.isNotEmpty()) {
+                AnalysisSection(
+                    title = "Optimal Activities",
+                    icon = Icons.Filled.TrendingUp,
+                    items = analysis.optimalActivities
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AnalysisSection(
+    title: String,
+    icon: ImageVector,
+    items: List<String>
+) {
+    Column(
+        modifier = Modifier.padding(vertical = 8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Medium
+                ),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        items.forEach { item ->
+            Row(
+                modifier = Modifier.padding(start = 28.dp, top = 4.dp)
+            ) {
+                Text(
+                    text = "•",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = item,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
     }
 } 
