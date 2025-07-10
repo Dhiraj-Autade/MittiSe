@@ -31,7 +31,17 @@ import com.example.mittise.R
 import com.example.mittise.model.Category
 import com.example.mittise.model.Update
 import com.example.mittise.ui.theme.*
+import com.example.mittise.ui.weather.WeatherViewModel
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.util.Log
 
 @Composable
 fun DashboardScreen(
@@ -174,8 +184,60 @@ fun WelcomeHeader() {
 
 @Composable
 fun EnhancedWeatherCard(
-    onWeatherClick: () -> Unit
+    onWeatherClick: () -> Unit,
+    weatherViewModel: WeatherViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    
+    // Permission launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+        val coarseLocationGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+        
+        Log.d("WeatherCard", "Permission result: FINE=$fineLocationGranted, COARSE=$coarseLocationGranted")
+        
+        if (fineLocationGranted || coarseLocationGranted) {
+            weatherViewModel.checkLocationPermission(context)
+        }
+    }
+    
+    // Check location permission on first launch
+    LaunchedEffect(Unit) {
+        Log.d("WeatherCard", "LaunchedEffect: Checking permission")
+        weatherViewModel.checkLocationPermission(context)
+        
+        // If permission not granted, request it
+        if (!weatherViewModel.hasLocationPermission) {
+            Log.d("WeatherCard", "LaunchedEffect: Requesting permission")
+            permissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
+    
+    // Get location and weather data when permission is granted
+    LaunchedEffect(weatherViewModel.hasLocationPermission) {
+        Log.d("WeatherCard", "LaunchedEffect hasLocationPermission: ${weatherViewModel.hasLocationPermission}")
+        if (weatherViewModel.hasLocationPermission) {
+            weatherViewModel.getCurrentLocation(context)
+        }
+    }
+    
+    // Refresh weather data when app becomes active
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            if (weatherViewModel.hasLocationPermission && weatherViewModel.location != null) {
+                weatherViewModel.refreshWeather()
+            }
+        }
+    }
+    
     WeatherCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -212,7 +274,12 @@ fun EnhancedWeatherCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     GradientText(
-                        text = "28°C",
+                        text = when {
+                            weatherViewModel.isLoading -> "Loading..."
+                            weatherViewModel.weatherData?.main?.temp != null -> 
+                                "${weatherViewModel.weatherData!!.main!!.temp.toInt()}°C"
+                            else -> "N/A"
+                        },
                         gradientColors = GradientColors.primaryGradient,
                         style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.Bold
@@ -221,7 +288,15 @@ fun EnhancedWeatherCard(
                 }
                 
                 Text(
-                    text = "Mumbai",
+                    text = when {
+                        weatherViewModel.isLoading -> "Getting location..."
+                        weatherViewModel.weatherData?.name != null -> 
+                            weatherViewModel.weatherData!!.name!!
+                        weatherViewModel.error != null -> "Location error"
+                        !weatherViewModel.hasLocationPermission -> "Enable location"
+                        weatherViewModel.location == null -> "Getting location..."
+                        else -> "Location available"
+                    },
                     style = MaterialTheme.typography.bodyLarge.copy(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                     ),
@@ -237,13 +312,23 @@ fun EnhancedWeatherCard(
             ) {
                 WeatherDetailItem(
                     icon = Icons.Default.Opacity,
-                    value = "65%",
+                    value = when {
+                        weatherViewModel.isLoading -> "--"
+                        weatherViewModel.weatherData?.main?.humidity != null -> 
+                            "${weatherViewModel.weatherData!!.main!!.humidity}%"
+                        else -> "N/A"
+                    },
                     label = "Humidity"
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 WeatherDetailItem(
                     icon = Icons.Default.Air,
-                    value = "12 km/h",
+                    value = when {
+                        weatherViewModel.isLoading -> "--"
+                        weatherViewModel.weatherData?.wind?.speed != null -> 
+                            "${weatherViewModel.weatherData!!.wind!!.speed.toInt()} km/h"
+                        else -> "N/A"
+                    },
                     label = "Wind"
                 )
             }
