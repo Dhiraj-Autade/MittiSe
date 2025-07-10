@@ -328,7 +328,7 @@ fun EnhancedBottomNavigation(
         ),
         NavigationItem(
             route = Screen.Social.route,
-            title = "Chatbot",
+            title = stringResource(R.string.chatbot_title),
             icon = Icons.Default.SmartToy
         ),
         NavigationItem(
@@ -501,7 +501,7 @@ fun EnhancedDrawerHeader() {
             )
             
             Text(
-                text = "Your Farming Companion",
+                text = stringResource(R.string.chatbot_subtitle),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
                 ),

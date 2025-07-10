@@ -81,7 +81,7 @@ fun MarketplaceScreen(
                             color = MaterialTheme.colorScheme.surface
                         )
                         Text(
-                            text = "Buy and sell agricultural products",
+                            text = stringResource(R.string.marketplace_subtitle),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
                             modifier = Modifier.padding(top = 4.dp)
@@ -106,7 +106,7 @@ fun MarketplaceScreen(
                             value = marketplaceState.selectedCategory ?: "All Categories",
                             onValueChange = { },
                             readOnly = true,
-                            label = { Text("Category") },
+                            label = { Text(stringResource(R.string.marketplace_category)) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = false) },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -131,7 +131,7 @@ fun MarketplaceScreen(
                             value = marketplaceState.selectedLocation ?: "All Locations",
                             onValueChange = { },
                             readOnly = true,
-                            label = { Text("Location") },
+                            label = { Text(stringResource(R.string.marketplace_location)) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = false) },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -163,7 +163,7 @@ fun MarketplaceScreen(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Register Your Product")
+                    Text(stringResource(R.string.marketplace_register_product))
                 }
             }
 
@@ -608,7 +608,7 @@ fun ProductRegistrationForm(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Camera")
+                        Text(stringResource(R.string.marketplace_camera))
                     }
                     OutlinedButton(
                         onClick = { /* Gallery */ }
@@ -619,7 +619,7 @@ fun ProductRegistrationForm(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Gallery")
+                        Text(stringResource(R.string.marketplace_gallery))
                     }
                 }
             }
@@ -812,7 +812,7 @@ fun ProductRegistrationForm(
                     containerColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             ) {
-                Text("Cancel", color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(R.string.cancel), color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface)
             }
             Button(
                 onClick = {

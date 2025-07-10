@@ -303,7 +303,7 @@ fun WelcomeMessage() {
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "👋 Hello! I'm your AI farming assistant",
+                text = stringResource(R.string.chatbot_welcome_title),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold
                 ),
@@ -311,13 +311,13 @@ fun WelcomeMessage() {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "I can help you with:\n• Crop recommendations\n• Weather advice\n• Pest control tips\n• Market prices\n• Farming techniques\n• And much more!",
+                text = stringResource(R.string.chatbot_welcome_message),
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (isDark) Color.Black.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "Try asking me something like:\n\"What crops are best for this season?\"\n\"How to control pests in tomatoes?\"\n\"What's the weather forecast?\"",
+                text = stringResource(R.string.chatbot_suggestions),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (isDark) Color.Black.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
@@ -552,14 +552,14 @@ fun ProfileScreen() {
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     Text(
-                        text = "Farmer Name",
+                        text = stringResource(R.string.profile_name),
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     )
                     Text(
-                        text = "Active Farmer",
+                        text = stringResource(R.string.profile_status_active),
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
                         )
@@ -579,11 +579,11 @@ fun ProfileScreen() {
             ) {
                 Icon(
                     imageVector = Icons.Filled.Edit,
-                    contentDescription = "Edit Profile",
+                    contentDescription = stringResource(R.string.profile_edit),
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Edit Profile")
+                Text(stringResource(R.string.profile_edit))
             }
         }
 
@@ -594,17 +594,17 @@ fun ProfileScreen() {
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 ProfileStatCard(
-                    title = "Posts",
+                    title = stringResource(R.string.profile_posts),
                     value = "12",
                     icon = Icons.Filled.Article
                 )
                 ProfileStatCard(
-                    title = "Followers",
+                    title = stringResource(R.string.profile_followers),
                     value = "45",
                     icon = Icons.Filled.People
                 )
                 ProfileStatCard(
-                    title = "Following",
+                    title = stringResource(R.string.profile_following),
                     value = "23",
                     icon = Icons.Filled.People
                 )
@@ -784,19 +784,19 @@ fun LocationServicePrompt(onEnable: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Location is turned off",
+                    text = stringResource(R.string.location_turned_off),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Please enable location services to get live weather updates.",
+                    text = stringResource(R.string.enable_location_services),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = onEnable) {
-                    Text("Turn On Location")
+                    Text(stringResource(R.string.turn_on_location))
                 }
             }
         }
@@ -830,14 +830,14 @@ fun CropCalendarScreen() {
                     modifier = Modifier.padding(20.dp)
                 ) {
                     Text(
-                        text = "Crop Calendar",
+                        text = stringResource(R.string.crop_calendar_title),
                         style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.Bold
                         ),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "Plan your farming activities with seasonal guidance",
+                        text = stringResource(R.string.crop_calendar_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
                         modifier = Modifier.padding(top = 4.dp)
@@ -849,7 +849,7 @@ fun CropCalendarScreen() {
         // Current Month Activities
         item {
             Text(
-                text = "This Month's Activities",
+                text = stringResource(R.string.this_month_activities),
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold
                 ),
@@ -895,14 +895,14 @@ fun SoilTestingScreen() {
                     modifier = Modifier.padding(20.dp)
                 ) {
                     Text(
-                        text = "Soil Testing",
+                        text = stringResource(R.string.soil_testing_title),
                         style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.Bold
                         ),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "Analyze your soil for better crop planning",
+                        text = stringResource(R.string.soil_testing_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
                         modifier = Modifier.padding(top = 4.dp)
@@ -926,7 +926,7 @@ fun SoilTestingScreen() {
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Test Your Soil")
+                Text(stringResource(R.string.test_your_soil))
             }
         }
 
@@ -1050,7 +1050,7 @@ fun AdvisorScreen() {
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Ask AI Advisor")
+                Text(stringResource(R.string.ask_ai_advisor))
             }
         }
 
@@ -1130,7 +1130,7 @@ data class CommunityPost(
 )
 
 data class ProfileOption(
-    val title: String,
+    val titleRes: Int,
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
     val onClick: () -> Unit
 )
@@ -1190,10 +1190,10 @@ private fun getSampleCommunityPosts(): List<CommunityPost> = listOf(
 )
 
 private fun getProfileOptions(): List<ProfileOption> = listOf(
-    ProfileOption("Settings", Icons.Filled.Settings) { },
-    ProfileOption("Notifications", Icons.Filled.Notifications) { },
-    ProfileOption("Privacy", Icons.Filled.Security) { },
-    ProfileOption("Help & Support", Icons.Filled.Help) { }
+    ProfileOption(R.string.profile_settings, Icons.Filled.Settings) { },
+    ProfileOption(R.string.profile_notifications, Icons.Filled.Notifications) { },
+    ProfileOption(R.string.profile_privacy, Icons.Filled.Security) { },
+    ProfileOption(R.string.profile_help, Icons.Filled.Help) { }
 )
 
 private fun getWeatherForecast(): List<WeatherForecast> = listOf(
@@ -1416,13 +1416,13 @@ fun ProfileOptionCard(option: ProfileOption) {
         ) {
             Icon(
                 imageVector = option.icon,
-                contentDescription = option.title,
+                contentDescription = stringResource(option.titleRes),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = option.title,
+                text = stringResource(option.titleRes),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Medium
                 ),
@@ -1431,7 +1431,7 @@ fun ProfileOptionCard(option: ProfileOption) {
             Spacer(modifier = Modifier.weight(1f))
             Icon(
                 imageVector = Icons.Filled.ChevronRight,
-                contentDescription = "Navigate",
+                contentDescription = stringResource(R.string.navigate),
                 tint = if (isDark) Color.Black.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )

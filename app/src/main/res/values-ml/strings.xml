@@ -1,147 +1,388 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">മിട്ടിസെ</string>
-    
+
     <!-- Navigation -->
-    <string name="dashboard">ഡാഷ്ബോർഡ്</string>
-    <string name="marketplace">മാർക്കറ്റ്പ്ലേസ്</string>
-    <string name="apmc">എപിഎംസി</string>
-    <string name="social">സോഷ്യൽ</string>
-    <string name="profile">പ്രൊഫൈൽ</string>
-    <string name="weather">കാലാവസ്ഥ</string>
-    <string name="advisor">ഉപദേശകൻ</string>
-    <string name="schemes">പദ്ധതികൾ</string>
-    <string name="crop_calendar">ഫസൽ കലണ്ടർ</string>
-    <string name="soil_testing">മണ്ണ് പരിശോധന</string>
-    <string name="help">സഹായം</string>
-    <string name="feedback">ഫീഡ്ബാക്ക്</string>
-    <string name="about">കുറിച്ച്</string>
-    <string name="articles">ലേഖനങ്ങൾ</string>
-    <string name="language">ഭാഷ</string>
-    <string name="settings">ക്രമീകരണങ്ങൾ</string>
-    
-    <!-- Categories -->
-    <string name="category_seeds">വിത്തുകൾ</string>
-    <string name="category_fertilizers">വളങ്ങൾ</string>
-    <string name="category_equipment">ഉപകരണങ്ങൾ</string>
-    <string name="category_pesticides">കീടനാശിനികൾ</string>
-    
-    <!-- Updates -->
-    <string name="updates_title">പുതിയ വിത്തുകൾ ലഭ്യമാണ്</string>
-    <string name="updates_subtitle">ഉയർന്ന ഗുണമേന്മയുള്ള വിത്തുകൾ</string>
-    <string name="weather_title">കാലാവസ്ഥ മുന്നറിയിപ്പ്</string>
-    
+    <string name="nav_home">ഹോം</string>
+    <string name="nav_weather">കാലാവസ്ഥ പ്രവചനം</string>
+    <string name="nav_crop_calendar">ഫസല്‍ കലണ്ടര്‍</string>
+    <string name="nav_soil_test">മണ്ണ് പരിശോധിക്കുക</string>
+    <string name="nav_articles">ലേഖനങ്ങള്‍ &amp; വാർത്തകൾ</string>
+    <string name="nav_help">സഹായം &amp; പിന്തുണ</string>
+    <string name="nav_feedback">പ്രതികരണം അയയ്ക്കുക</string>
+    <string name="nav_about">അപേക്ഷയെ കുറിച്ച്</string>
+    <string name="nav_language">ഭാഷ</string>
+    <string name="nav_advisor">ഉപദേശകര്‍</string>
+    <string name="nav_schemes">പദ്ധതികൾ</string>
+    <string name="nav_product_details">ഉത്പന്ന വിവരങ്ങൾ</string>
+    <string name="nav_post_details">പോസ്റ്റ് വിശദാംശങ്ങൾ</string>
+    <string name="nav_support">പിന്തുണ</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">ഡാഷ്ബോർഡ്</string>
+    <string name="dashboard_welcome">മിട്ടിസെ-ൽ സ്വാഗതം</string>
+    <string name="dashboard_quick_actions">വേഗതയുള്ള പ്രവർത്തനങ്ങൾ</string>
+    <string name="dashboard_weather">കാലാവസ്ഥ</string>
+    <string name="dashboard_marketplace">മാർക്കറ്റ്‌പ്ലേസ്</string>
+    <string name="dashboard_apmc">APMC വിലകൾ</string>
+    <string name="dashboard_social">സമൂഹം</string>
+    <string name="dashboard_profile">പ്രൊഫൈൽ</string>
+
+    <!-- Weather -->
+    <string name="weather_title">കാലാവസ്ഥ പ്രവചനം</string>
+    <string name="weather_current">നിലവിലെ കാലാവസ്ഥ</string>
+    <string name="weather_temperature">താപനില</string>
+    <string name="weather_humidity">ഇടിവരവ്</string>
+    <string name="weather_wind">കാറ്റിന്റെ വേഗം</string>
+    <string name="weather_forecast">5-ദിവസ പ്രവചനം</string>
+
     <!-- Marketplace -->
-    <string name="marketplace_title">കാർഷിക മാർക്കറ്റ്പ്ലേസ്</string>
-    <string name="farmer_product_registration_title">ഉത്പന്ന രജിസ്ട്രേഷൻ</string>
-    <string name="farmer_product_name">ഉത്പന്നത്തിന്റെ പേര്</string>
-    <string name="product_type">ഉത്പന്ന തരം</string>
-    <string name="farmer_product_quantity">അളവ്</string>
-    <string name="unit">യൂണിറ്റ്</string>
-    <string name="farmer_product_price">അനുമാനിക്കുന്ന വില</string>
-    <string name="price_unit">വില യൂണിറ്റ്</string>
-    <string name="farmer_product_description">വിവരണം</string>
-    <string name="farmer_name">കർഷകന്റെ പേര്</string>
-    <string name="farmer_product_contact">ബന്ധപ്പെടാനുള്ള വിവരങ്ങൾ</string>
-    <string name="farmer_product_location">സ്ഥലം</string>
-    
-    <!-- Language Selection -->
-    <string name="select_language">ഭാഷ തിരഞ്ഞെടുക്കുക</string>
+    <string name="marketplace_title">ഇ-കൊമേഴ്സ്</string>
+    <string name="marketplace_search_hint">ഉൽപ്പന്നങ്ങൾ തിരയുക…</string>
+    <string name="marketplace_categories">വർഗ്ഗങ്ങൾ</string>
+    <string name="marketplace_products">ഉൽപ്പന്നങ്ങൾ</string>
+    <string name="marketplace_add_to_cart">കാർട്ടിൽ ചേർക്കുക</string>
+    <string name="marketplace_buy_now">ഇപ്പോൾ വാങ്ങൂ</string>
+    <string name="marketplace_price">വില</string>
+    <string name="marketplace_quantity">തുടർച്ച</string>
+    <string name="marketplace_subtitle">കൃഷിയേള ഉൽപ്പന്നങ്ങൾ വാങ്ങാനും വിൽക്കാനും</string>
+
+    <!-- APMC -->
+    <string name="apmc_title">APMC വിലകൾ</string>
+    <string name="apmc_subtitle">കൃഷി വിപണിയിലെ വിലകൾ</string>
+    <string name="apmc_select_crop">ഫസൽ തിരഞ്ഞെടുക്കുക</string>
+    <string name="apmc_current_price">നിലവിലെ വില</string>
+    <string name="apmc_market">വിപണി</string>
+    <string name="apmc_date">തീയതി</string>
+
+    <!-- Social -->
+    <string name="social_title">സമൂഹം</string>
+    <string name="social_subtitle">പറപങ്കിട്ടുചേർന്ന പ്രവൃത്തി</string>
+    <string name="social_post_hint">നിങ്ങളുടെ കൃഷി അനുഭവങ്ങൾ ഇവിടെ പങ്കു തുറക്കൂ…</string>
+    <string name="social_post">പോസ്റ്റ് ചെയ്യുക</string>
+    <string name="social_like">പ്രീതി</string>
+    <string name="social_comment">കമന്റ്</string>
+    <string name="social_share">പങ്കിടുക</string>
+
+    <!-- Profile -->
+    <string name="profile_title">പ്രൊഫൈൽ</string>
+    <string name="profile_edit">പ്രൊഫൈൽ തിരുത്തുക</string>
+    <string name="profile_name">പേര്</string>
+    <string name="profile_email">ഇമെയിൽ</string>
+    <string name="profile_phone">ഫോൺ</string>
+    <string name="profile_location">പ്രദേശം</string>
+    <string name="profile_save">സേവ്</string>
+    <string name="profile_cancel">റദ്ദാക്കുക</string>
+    <string name="profile_posts">പോസ്റ്റ്</string>
+    <string name="profile_followers">ഫോളോവേറുകൾ</string>
+    <string name="profile_following">ഫോളോ ചെയ്യുന്നു</string>
+    <string name="profile_settings">സജ്ജീകരണങ്ങൾ</string>
+    <string name="profile_notifications">അറിയിപ്പുകൾ</string>
+    <string name="profile_privacy">സ്വകാര്യത</string>
+    <string name="profile_security">സുരക്ഷ</string>
+    <string name="profile_help">സഹായം &amp; പിന്തുണ</string>
+    <string name="profile_about">അപേക്ഷയെ കുറിച്ച്</string>
+    <string name="profile_logout">ലോഗ്ഔട്ട്</string>
+    <string name="profile_status_active">സജീവമായ കർഷകൻ</string>
+    <string name="navigate">നാവിഗേറ്റ് ചെയ്യുക</string>
+
+
+
+    <!-- Profile Editing -->
+    <string name="profile_edit_name">പേര് തിരുത്തുക</string>
+    <string name="profile_edit_location">പ്രദേശം തിരുത്തുക</string>
+    <string name="profile_edit_picture">പ്രൊഫൈൽ ചിത്രം തിരുത്തുക</string>
+    <string name="profile_name_hint">നിങ്ങളുടെ പേര് ടൈപ്പ് ചെയ്യുക</string>
+    <string name="profile_location_hint">നിങ്ങളുടെ സ്ഥലം ടൈപ്പ് ചെയ്യുക</string>
+    <string name="profile_open_maps">മാപ്പിൽ തുറക്കുക</string>
+    <string name="profile_camera">ക്യാമറ</string>
+    <string name="profile_gallery">ഗാലറി</string>
+    <string name="profile_remove_picture">ചിത്രം ഒഴിവാക്കുക</string>
+    <string name="profile_picture_updated">പ്രൊഫൈൽ ചിത്രം അപ്ഡേറ്റ് ചെയ്തു</string>
+    <string name="profile_name_updated">പേര് വിജയകരമായി അപ്ഡേറ്റ് ചെയ്തു</string>
+    <string name="profile_location_updated">സ്ഥലം വിജയകരമായി അപ്ഡേറ്റ് ചെയ്തു</string>
+
+            <!-- Language Selection -->
+            <string name="language_title">ഭാഷ തിരഞ്ഞെടുക്കുക</string>
     <string name="language_english">English</string>
     <string name="language_hindi">हिंदी</string>
     <string name="language_marathi">मराठी</string>
     <string name="language_tamil">தமிழ்</string>
     <string name="language_telugu">తెలుగు</string>
-    <string name="language_malayalam">മലയാളം</string>
-    <string name="language_changed">ഭാഷ മാറ്റി</string>
-    <string name="restart_app_message">മാറ്റങ്ങൾ പ്രാബല്യത്തിൽ വരാൻ ആപ്പ് പുനരാരംഭിക്കുക</string>
-    
-    <!-- Common -->
-    <string name="cancel">റദ്ദാക്കുക</string>
-    <string name="save">സൂക്ഷിക്കുക</string>
-    <string name="edit">എഡിറ്റ്</string>
-    <string name="delete">ഇല്ലാതാക്കുക</string>
-    <string name="view_all">എല്ലാം കാണുക</string>
-    <string name="logout">ലോഗൗട്ട്</string>
-    <string name="notifications">അറിയിപ്പുകൾ</string>
-    <string name="menu">മെനു</string>
-    
-    <!-- Weather -->
-    <string name="weather_humidity">ആർദ്രത</string>
-    <string name="weather_wind">കാറ്റ്</string>
-    <string name="weather_temperature">താപനില</string>
-    
-    <!-- Profile -->
-    <string name="edit_profile">പ്രൊഫൈൽ എഡിറ്റ്</string>
-    <string name="full_name">പൂർണ്ണ നാമം</string>
-    <string name="email">ഇമെയിൽ</string>
-    <string name="phone">ഫോൺ</string>
-    <string name="address">വിലാസം</string>
-    <string name="farmer_id">കർഷക ഐഡി</string>
-    
-    <!-- APMC -->
-    <string name="apmc_title">കാർഷിക ഉത്പന്ന വിപണി കമ്മിറ്റി</string>
-    <string name="apmc_subtitle">ഔദ്യോഗിക വിപണി വിലകൾ</string>
-    
-    <!-- Social -->
-    <string name="social_title">കർഷക സമൂഹം</string>
-    <string name="social_subtitle">അനുഭവങ്ങൾ പങ്കുവെയ്ക്കുക</string>
-    
-    <!-- Schemes -->
-    <string name="schemes_title">സർക്കാർ പദ്ധതികൾ</string>
-    <string name="schemes_subtitle">കർഷകർക്കുള്ള സഹായം</string>
-    
-    <!-- Advisor -->
-    <string name="advisor_title">കാർഷിക ഉപദേശകൻ</string>
-    <string name="advisor_subtitle">വിദഗ്ധ ഉപദേശം</string>
-    
-    <!-- Help -->
-    <string name="help_title">സഹായം</string>
+    <string name="language_apply">പ്രവർത്തിപ്പിക്കുക</string>
+    <string name="language_cancel">റദ്ദാക്കുക</string>
+    <string name="language_restart_required">ഭാഷ മാറ്റത്തിന് ആപ്പ് റീസ്റ്റാർട്ട് ആവശ്യമാണ്</string>
+    <string name="language_restart_now">ഇപ്പോൾ റീസ്റ്റാർട്ട് ചെയ്യുക</string>
+    <string name="language_restart_later">ശേഷം റീസ്റ്റാർട്ട് ചെയ്യുക</string>
+    <string name="language_choose_hint">ആപ്പ് മികവുറ്റ ഭാഷ തിരഞ്ഞെടുക്കുക</string>
+
+            <!-- Common -->
+            <string name="loading">ലോഡുചെയ്യുന്നു…</string>
+    <string name="error_occurred">ഒരു പിശക് സംഭവിച്ചു</string>
+    <string name="retry">വീണ്ടും ശ്രമിക്കുക</string>
+    <string name="ok">ഒകെ</string>
+    <string name="yes">അതെ</string>
+    <string name="no">ഇല്ല</string>
+    <string name="back">തിരികെ</string>
+    <string name="next">അടുത്തത്</string>
+    <string name="done">നിശ്ചയിച്ചു</string>
+
+            <!-- Categories -->
+            <string name="category_icon">വർഗ്ഗ ഐകൺ</string>
+    <string name="category_seeds">വിത്തുകൾ</string>
+    <string name="category_fertilizers">രാസവളങ്ങൾ</string>
+    <string name="category_pesticides">പുഴുക്കനാശിനികൾ</string>
+    <string name="category_equipment">ഉപകരണങ്ങൾ</string>
+
+            <!-- Updates -->
+            <string name="update_icon">അപ്ഡേറ്റ് ഐകൺ</string>
+    <string name="update_image">അപ്ഡേറ്റ് ചിത്രം</string>
+    <string name="updates_title">ഏറ്റവും പുതിയ അപ്ഡേറ്റുകൾ</string>
+    <string name="updates_subtitle">കർഷക വാർത്തയിൽ പുതുക്കൽ</string>
+
+            <!-- About -->
+            <string name="about_title">മിട്ടിസെ ബാധിച്ച്</string>
+    <string name="about_description">മിട്ടിസെ ഇന്ത്യൻ കർഷകർക്കുള്ള ഒരു വൺ-സ്റ്റോപ്പ് ആപ്പ് ആണ്, ഇ-കൊമേഴ്സ്, APMC വിലകൾ, കാലാവസ്ഥ, സമൂഹം മുതലായവ നൽകുന്നു.</string>
+    <string name="about_subtitle">മിട്ടിസെ ആപ്പിനെക്കുറിച്ച്</string>
+
+            <!-- Help -->
+            <string name="help_title">സഹായം &amp; പിന്തുണ</string>
+    <string name="help_description">എന്തെങ്കിലും സംശയമോ സഹായം വേണോ: support@mittise.com എന്നതിലേക്ക് ബന്ധപ്പെടുക</string>
     <string name="help_subtitle">ആപ്പ് എങ്ങനെ ഉപയോഗിക്കാം</string>
-    
-    <!-- Feedback -->
-    <string name="feedback_title">ഫീഡ്ബാക്ക്</string>
-    <string name="feedback_subtitle">നിങ്ങളുടെ അഭിപ്രായം പങ്കുവെയ്ക്കുക</string>
-    
-    <!-- About -->
-    <string name="about_title">കുറിച്ച്</string>
-    <string name="about_subtitle">മിട്ടിസെ ആപ്പ്</string>
-    
-    <!-- Articles -->
-    <string name="articles_title">ലേഖനങ്ങൾ</string>
-    <string name="articles_subtitle">കാർഷിക വാർത്തകൾ</string>
-    
-    <!-- Settings -->
-    <string name="settings_title">ക്രമീകരണങ്ങൾ</string>
-    <string name="settings_subtitle">ആപ്പ് ക്രമീകരണങ്ങൾ</string>
-    
-    <!-- Product Types -->
-    <string name="product_type_fruit">പഴം</string>
-    <string name="product_type_vegetable">പച്ചക്കറി</string>
-    <string name="product_type_grain">ധാന്യം</string>
-    <string name="product_type_pulse">പയർ</string>
-    <string name="product_type_spice">മസാല</string>
-    <string name="product_type_other">മറ്റുള്ളവ</string>
-    
-    <!-- Units -->
-    <string name="unit_kg">കിലോ</string>
-    <string name="unit_ton">ടൺ</string>
-    <string name="unit_quintal">ക്വിന്റൽ</string>
-    <string name="unit_dozen">ഡസൻ</string>
-    <string name="unit_piece">കഷണം</string>
-    
-    <!-- Price Units -->
-    <string name="price_unit_per_kg">കിലോയ്ക്ക്</string>
-    <string name="price_unit_per_ton">ടണ്ണിന്</string>
-    <string name="price_unit_per_quintal">ക്വിന്റലിന്</string>
-    <string name="price_unit_per_dozen">ഡസനിന്</string>
-    <string name="price_unit_per_piece">കഷണത്തിന്</string>
-    
-    <!-- Camera and Gallery -->
+
+            <!-- Feedback -->
+            <string name="feedback_title">പ്രതികരണം അയയ്ക്കുക</string>
+    <string name="feedback_description">നിങ്ങളുടെ പ്രതികരണം വിലമതിക്കുന്നു! ദയവായി എഴുതി അയയ്ക്കുക: feedback@mittise.com</string>
+    <string name="feedback_subtitle">നിങ്ങളുടെ അഭിപ്രായം പങ്കുവെക്കുക</string>
+
+            <!-- Fragment Placeholders -->
+            <string name="apmc_fragment_title">APMC ഘടകം</string>
+    <string name="social_fragment_title">സമൂഹ ഭാഗം</string>
+    <string name="edit_profile_fragment_title">പ്രൊഫൈൽ തിരുത്തൽ ഭാഗം</string>
+    <string name="post_details_fragment_title">പോസ്റ്റ് വിശദാംശങ്ങൾ ഘടകം</string>
+
+            <!-- Farmer Product Registration -->
+            <string name="farmer_product_registration_title">നിങ്ങളുടെ ഉൽപ്പന്നം രജിസ്റ്റർ ചെയ്യുക</string>
+    <string name="product_image">ഉൽപ്പന്ന ചിത്രം</string>
     <string name="camera">ക്യാമറ</string>
     <string name="gallery">ഗാലറി</string>
-    <string name="add_product">നിങ്ങളുടെ ഉത്പന്നം രജിസ്ടർ ചെയ്യുക</string>
-    <string name="no_products_available">ഉത്പന്നങ്ങൾ ലഭ്യമല്ല</string>
-    <string name="be_first_to_register">ആദ്യത്തെ രജിസ്ടർ ചെയ്യുന്നയാൾ ആകൂ!</string>
-    <string name="available">ലഭ്യമാണ്</string>
-</resources> 
+    <string name="product_details">ഉൽപ്പന്ന വിശദാംശങ്ങൾ</string>
+    <string name="product_name">ഉൽപ്പന്നത്തിന്റെ പേര്</string>
+    <string name="product_type">ഉൽപ്പന്ന തരം</string>
+    <string name="quantity">അളവ്</string>
+    <string name="unit">ഐക്ക്യം</string>
+    <string name="expected_price">പ്രതീക്ഷിക്കുന്ന വില</string>
+    <string name="price_unit">വില ഐക്ക്യം</string>
+    <string name="product_description">ഉൽപ്പന്ന വിവരണം</string>
+    <string name="farmer_details">കർഷകന് വേണ്ടി വിവരങ്ങൾ</string>
+    <string name="farmer_name">കർഷകന്റെ പേര്</string>
+    <string name="farmer_contact">ക 연락ം വിവരം</string>
+    <string name="farm_location">തോട്ടത്തിന്റെ സ്ഥലം</string>
+    <string name="register_product">ഉൽപ്പന്നം രജിസ്റ്റർ ചെയ്യുക</string>
+    <string name="call_farmer">കർഷകനെ കോൾ ചെയ്യുക</string>
+    <string name="view_location">സ്ഥലം കാണുക</string>
+    <string name="farmer_products">കർഷക ഉൽപ്പന്നങ്ങൾ</string>
+    <string name="add_product">ഉൽപ്പന്നം ചേർക്കുക</string>
+    <string name="register_your_product">നിങ്ങളുടെ ഉൽപ്പന്നം രജിസ്റ്റർ ചെയ്യുക</string>
+
+
+    <!-- Missing strings from build warnings -->
+    <string name="farmer_product_contact">ക 연락ം</string>
+    <string name="farmer_product_contact_farmer">കർഷകനോട് 연락ം</string>
+    <string name="farmer_product_contact_hint">ക 연락 നമ്പർ ടൈപ്പ് ചെയ്യുക</string>
+    <string name="farmer_product_description">വിവരണം</string>
+    <string name="farmer_product_description_hint">ഉൽപ്പന്ന വിവരണം ടൈപ്പ് ചെയ്യൂ</string>
+    <string name="farmer_product_details_title">ഉൽപ്പന്ന വിശദാംശങ്ങൾ</string>
+    <string name="farmer_product_location">സ്ഥലം</string>
+    <string name="farmer_product_location_hint">തോട്ടത്തിന്റെ സ്ഥലം ടൈപ്പുചെയ്യുക</string>
+    <string name="farmer_product_name">ഉൽപ്പന്നത്തിന്റെ പേര്</string>
+    <string name="farmer_product_name_hint">ഉൽപ്പന്നത്തിന്റെ പേര് ടൈപ്പ് ചെയ്യുക</string>
+    <string name="farmer_product_price">വില</string>
+    <string name="farmer_product_price_hint">പ്രതീക്ഷിക്കുന്ന വില ടൈപ്പ് ചെയ്യുക</string>
+    <string name="farmer_product_quantity">അളവ്</string>
+    <string name="farmer_product_quantity_hint">അളവ് ടൈപ്പ് ചെയ്യുക</string>
+    <string name="farmer_product_register">രജിസ്റ്റർ ചെയ്യുക</string>
+    <string name="farmer_product_success">ഉൽപ്പന്നം വിജയകരമായി രജിസ്റ്റർ ചെയ്തു</string>
+
+            <!-- Enhanced Marketplace -->
+            <string name="farmer_product">കർഷകൻ ഉൽപ്പന്നം</string>
+    <string name="available_quantity">ലഭ്യമുണ്ട്: %1$s %2$s</string>
+    <string name="product_rating">റേറ്റിംഗ്: %1$.1f</string>
+    <string name="verified_seller">സുരക്ഷിത വിൽപ്പനക്കാരൻ</string>
+    <string name="contact_farmer">കർഷകനോട് 联系ം</string>
+    <string name="view_on_map">മാപ്പിൽ കാണുക</string>
+    <string name="add_to_cart">കാർട്ടിൽ ചേർക്കുക</string>
+    <string name="buy_now">ഇപ്പോൾ വാങ്ങൂ</string>
+    <string name="seller_details">വിൽപ്പനക്കാരന്റെ വിവരം</string>
+    <string name="product_specifications">ഉൽപ്പന്ന സ്പെസിഫിക്കേഷൻ</string>
+    <string name="delivery_info">വിതരണ വിവരം</string>
+    <string name="payment_options">പേയ്മെന്റ് ഓപ്‌ഷനുകൾ</string>
+    <string name="related_products">ബന്ധപ്പെട്ട ഉൽപ്പന്നങ്ങൾ</string>
+    <string name="filter_products">ഉൽപ്പന്നങ്ങൾ ഫിൽട്ടർ ചെയ്യുക</string>
+    <string name="sort_by">ഇതു പ്രകാരം ക്രമീകരിക്കൂ</string>
+    <string name="price_low_to_high">വില: കുറഞ്ഞത് മുതൽ കൂടുതലിലേക്ക്</string>
+    <string name="price_high_to_low">വില: കൂടുതലെടുക്കുന്നു മുമ്പിൽ</string>
+    <string name="newest_first">പുതുതായി ആദ്യമായുള്ളവ</string>
+    <string name="rating">റേറ്റിംഗ്</string>
+    <string name="distance">ദൂരത</string>
+    <string name="show_farmer_products">കർഷക ഉൽപ്പന്നങ്ങൾ കാണിക്കുക</string>
+    <string name="hide_farmer_products">കർഷക ഉൽപ്പന്നങ്ങൾ മറയ്ക്കുക</string>
+    <string name="marketplace_empty">ഉൽപ്പന്നങ്ങൾ കണ്ടെത്താനായില്ല</string>
+    <string name="marketplace_empty_message">ദയവായി നിങ്ങളുടെ തിരയൽ അല്ലെങ്കിൽ ഫിൽട്ടർ ക്രമീകരിക്കുക</string>
+
+            <!-- Drawer Navigation -->
+            <string name="dashboard">ഡാഷ്ബോർഡ്</string>
+    <string name="marketplace">മാർക്കറ്റ്‌പ്ലേസ്</string>
+    <string name="apmc">APMC</string>
+    <string name="social">സമൂഹം</string>
+    <string name="profile">പ്രൊഫൈൽ</string>
+    <string name="weather">കാലാവസ്ഥ</string>
+    <string name="advisor">ഉപദേശകര്‍</string>
+    <string name="schemes">പദ്ധതികൾ</string>
+    <string name="crop_calendar">ഫസല്‍ കലണ്ടര്‍</string>
+    <string name="soil_testing">മണ്ണ് പരിശോധിക്കുക</string>
+    <string name="help">സഹായം</string>
+    <string name="feedback">പ്രതികരണം</string>
+    <string name="about">അപേക്ഷയെ കുറിച്ച്</string>
+    <string name="articles">ലേഖനങ്ങൾ</string>
+    <string name="language">ഭാഷ</string>
+    <string name="settings">സജ്ജീകരണങ്ങൾ</string>
+    <string name="logout">ലോഗ്ഔട്ട്</string>
+    <string name="notifications">അറിയിപ്പുകൾ</string>
+    <string name="menu">മെന്യൂ</string>
+
+            <!-- Language Selection -->
+            <string name="select_language">ഭാഷ തിരഞ്ഞെടുക്കുക</string>
+    <string name="language_malayalam">മലയാളം</string>
+    <string name="language_changed">ഭാഷ മാറ്റി</string>
+    <string name="restart_app_message">മാറ്റങ്ങൾ പ്രാബല്യത്തിലാക്കാൻ ആപ്പ് പുനഃപ്രാരംഭിക്കുക</string>
+    <string name="language_change_title">ഭാഷ മാറ്റം</string>
+    <string name="language_changing_message">ഭാഷ മാറുന്നു… കാത്തിരിക്കുക</string>
+    <string name="language_tap_message">ഭാഷ മാറ്റുന്നതിനായി ടാപ്പ് ചെയ്യുക. ആപ്പ് സ്വയമേവ റീസ്റ്റാർട്ട് ചെയ്യും.</string>
+    <string name="current_language">നിലവിലെ ഭാഷ</string>
+
+            <!-- Settings -->
+            <string name="settings_title">സജ്ജീകരണങ്ങൾ</string>
+    <string name="settings_subtitle">ആപ്പ് സജ്ജീകരണങ്ങൾ</string>
+    <string name="privacy_security">സ്വകാര്യത &amp; സുരക്ഷ</string>
+    <string name="manage_notifications">അറിയിപ്പ് മുൻതൂക്കം നടത്തുക</string>
+    <string name="manage_privacy">സ്വകാര്യത ക്രമങ്ങൾ നിയന്ത്രിക്കുക</string>
+    <string name="app_version">ആപ് പതിപ്പ് &amp; വിവരങ്ങൾ</string>
+
+            <!-- Advisor -->
+            <string name="advisor_title">കൃഷി ഉപദേശം</string>
+    <string name="advisor_subtitle">വിദഗ്ധ ഉപദേശം</string>
+
+            <!-- Schemes -->
+            <string name="schemes_title">सरकारी പദ്ധതകൾ</string>
+    <string name="schemes_subtitle">കർഷകർക്കുള്ള സഹായം</string>
+
+            <!-- Product Types -->
+            <string name="product_type_fruit">പഴം</string>
+    <string name="product_type_vegetable">പച്ചക്കറി</string>
+    <string name="product_type_grain">ധാനം</string>
+    <string name="product_type_pulse">പയർ</string>
+    <string name="product_type_spice">മസാല</string>
+    <string name="product_type_other">ഇതര</string>
+
+            <!-- Units -->
+            <string name="unit_kg">കി.ഗ്രാ.</string>
+    <string name="unit_ton">ടൺ</string>
+    <string name="unit_quintal">ക്വിന്റൽ</string>
+    <string name="unit_dozen">ദസൻ</string>
+    <string name="unit_piece">ഇനം</string>
+
+            <!-- Price Units -->
+    <string name="price_unit_per_kg">പ്രതി കി.ഗ്രാ.</string>
+    <string name="price_unit_per_ton">പ്രതി ടൺ</string>
+    <string name="price_unit_per_quintal">പ്രതി ക്വിന്റൽ</string>
+    <string name="price_unit_per_dozen">പ്രതി ദസൻ</string>
+    <string name="price_unit_per_piece">പ്രതി ഇനം</string>
+
+            <!-- Marketplace Enhanced -->
+    <string name="no_products_available">ഉൽപ്പന്നങ്ങൾ ലഭ്യമല്ല</string>
+    <string name="be_first_to_register">താങ്കൾ ആദ്യമായി ഉൽപ്പന്നം രജിസ്റ്റർ ചെയ്യുന്നതിനാണ്!</string>
+    <string name="available">ലഭ്യമുണ്ട്</string>
+
+            <!-- New strings -->
+    <string name="address">വിലാസം</string>
+    <string name="articles_subtitle">കൃഷി വാർത്തകൾ</string>
+    <string name="articles_title">ലേഖനങ്ങൾ</string>
+    <string name="cancel">റദ്ദാക്കുക</string>
+    <string name="delete">തവനത്</string>
+    <string name="edit">തിരുത്ത്</string>
+    <string name="edit_profile">പ്രൊഫൈല്‍ തിരുത്തുക</string>
+    <string name="email">ഇമെയിൽ</string>
+    <string name="farmer_id">കർഷകന്‍റെ ഐഡി</string>
+    <string name="full_name">പൂർണ്ണ പേര്</string>
+    <string name="phone">ഫോൺ</string>
+    <string name="save">സേവ്</string>
+    <string name="view_all">എല്ലാത്തെയും കാണുക</string>
+
+            <!-- Chatbot -->
+    <string name="chatbot_title">AI സഹായകന്‍</string>
+    <string name="chatbot_subtitle">നിങ്ങളുടെ കൃഷി കൂട്ടുകാരൻ</string>
+    <string name="chatbot_welcome_title">ഹലോ! ഞാൻ നിങ്ങളുടെ AI കൃഷി സഹായിയാണ്</string>
+    <string name="chatbot_welcome_message">ഞാൻ നിങ്ങളുടെ സഹായം നൽകാം:&#10;• ഫസലുകളുടെ ശുപാർശകൾ&#10;• കാലാവസ്ഥ ഉപദേശം&#10;• കീട നിയന്ത്രണ ടിപ്‌സ്&#10;• മാർക്കറ്റ് വിലകൾ&#10;• കൃഷി സാങ്കേതിക വിദ്യകൾ&#10;• ఇంకా ഏറെ!</string>
+    <string name="chatbot_suggestions">പ്രശ്നങ്ങൾ ചോദിക്കുക:&#10;"ഈ കാലയളവിൽ ഏത് പച്ചക്കറികൾ ഉചിതമാണ്?"&#10;"തക്കാളിയിൽ കീടം എങ്ങനെ നിയന്ത്രിക്കാം?"&#10;"കാലാവസ്ഥ പ്രവചനം എന്താണ്?"</string>
+    <string name="chatbot_input_hint">നിങ്ങളുടെ ചോദ്യമഴിക്കൂ…</string>
+    <string name="chatbot_listening_hint">കേൾക്കുന്നു…</string>
+    <string name="chatbot_send">അയക്കൂ</string>
+    <string name="chatbot_mic">രജിസ്‌ട്രിംഗ് ആരംഭിക്കുക</string>
+    <string name="chatbot_mic_stop">രജിസ്‌ട്രിംഗ് நிறുത്തുക</string>
+    <string name="chatbot_speak">പറയുക</string>
+    <string name="chatbot_typing">AI ടൈപ്പ് ചെയ്യുന്നു…</string>
+    <string name="chatbot_just_now">ഇപ്പോൾ</string>
+    <string name="chatbot_minutes_ago">%1$dm മുമ്പ്</string>
+    <string name="chatbot_hours_ago">%1$dh മുമ്പ്</string>
+    <string name="chatbot_days_ago">%1$dd ദിവസം മുമ്പ്</string>
+
+    <string name="coming_soon">വരുന്നു</string>
+
+            <!-- New updates -->
+    <string name="update_title_crop_advisory">പുതിയ ഫസല്‍ ഉപദേശം</string>
+    <string name="update_desc_crop_advisory">ഈ കാലയളവിനുള്‍最新 കൃഷി ടിപുകള്‍</string>
+    <string name="update_title_market_price">വിപണി വില അപ്ഡേറ്റ്</string>
+    <string name="update_desc_market_price">നിങ്ങളുടെ ഫസലിന്റെ ഇന്ന് APMC വില പരിശോധിക്കുക</string>
+    <string name="update_title_weather_alert">കാലാവസ്ഥ അലർട്ട്</string>
+    <string name="update_desc_weather_alert">നിങ്ങളുടെ പ്രദേശത്ത് കനത്ത മഴാവർഷന സാധ്യത</string>
+    <string name="update_date_today">ഇന്ന്</string>
+
+            <!-- FAQs -->
+    <string name="faq_register_products_q">ചോദ്യ൪ എത്രാം ഞാൻ എന്റെ ഉൽപ്പന്നം രജിസ്റ്റർ ചെയ്യാം?</string>
+    <string name="faq_register_products_a">മാർക്കറ്റ്‌പ്ലേസ് → ഉൽപ്പന്നം ചേർക്കുക എന്നത് സന്ദർശിച്ച് ആവശ്യമായ വിശദാംശങ്ങൾ പൂരിപ്പിക്കുക.</string>
+    <string name="faq_check_apmc_q">Q: എങ്ങനെ ഞാൻ APMC വിലകൾ പരിശോധിക്കാം?</string>
+    <string name="faq_check_apmc_a">APMC വിഭാഗത്തിലേക്ക് പോവുക, വിവിധ ഫസലുകളുടെ നിലവിലെ വിലകൾ കാണാനാകും.</string>
+    <string name="faq_change_language_q">Q: ഭാഷ എങ്ങനെ മാറ്റാം?</string>
+    <string name="faq_change_language_a">പ്രൊഫൈൽ → ഭാഷ സന്ദർശിച്ച് നിങ്ങളുടെ ഇഷ്ടമായ ഭാഷ തിരഞ്ഞെടുക്കൂ.</string>
+    <string name="faq_contact_farmers_q">Q: ഞാൻ മറ്റ് കർഷകർക്കൊപ്പം എങ്ങനെ ബന്ധപ്പെടാം?</string>
+    <string name="faq_contact_farmers_a">സമൂഹ ഭാഗം ഉപയോഗിച്ച് കർഷക സമുദായവുമായി ബന്ധപ്പെട്ടേക്കാം.</string>
+
+    <string name="feedback_send_feedback">പ്രതികരണം അയയ്ക്കുക</string>
+    <string name="feedback_your_email">നിങ്ങളുടെ ഇമെയിൽ</string>
+    <string name="feedback_subject">വിഷയം</string>
+    <string name="feedback_your_message">നിങ്ങളുടെ സന്ദേശം</string>
+    <string name="feedback_send">അയയ്ക്കുക</string>
+    <string name="feedback_other_ways">ബന്ധപ്പെടുന്നതിനുള്ള മറ്റു മാർഗങ്ങൾ</string>
+    <string name="feedback_email">ഇമെയിൽ</string>
+    <string name="feedback_phone">ഫോൺ</string>
+    <string name="feedback_social_media">സോഷ്യൽ മീഡിയ</string>
+    <string name="marketplace_category">വിഭാഗം</string>
+    <string name="marketplace_location">സ്ഥാനം</string>
+    <string name="marketplace_register_product">നിങ്ങളുടെ ഉൽപ്പന്നം രജിസ്റ്റർ ചെയ്യുക</string>
+    <string name="marketplace_camera">ക്യാമറ</string>
+    <string name="marketplace_gallery">ഗാലറി</string>
+    <string name="location_turned_off">സ്ഥലസേവനം ഓഫാണ്</string>
+    <string name="enable_location_services">തത്സമയ കാലാവസ്ഥാ അപ്ഡേറ്റുകൾക്കായി സ്ഥാന സേവനം സജീവമാക്കുക.</string>
+    <string name="turn_on_location">സ്ഥാനം ഓൺ ചെയ്യുക</string>
+    <string name="crop_calendar_title">വിള കാൽണ്ടർ</string>
+    <string name="crop_calendar_subtitle">മൗസമിക മാർഗനിർദേശത്തോടെ കൃഷി പ്രവർത്തനങ്ങൾ ആസൂത്രണം ചെയ്യുക</string>
+    <string name="this_month_activities">ഈ മാസത്തിലെ പ്രവർത്തനങ്ങൾ</string>
+    <string name="soil_testing_title">മണ്ണിന്റെ പരിശോധന</string>
+    <string name="soil_testing_subtitle">മെച്ചപ്പെട്ട വിളിയിനവിന്യാസത്തിനായി നിങ്ങളുടെ മണ്ണ് വിശകലനം ചെയ്യുക</string>
+    <string name="test_your_soil">നിങ്ങളുടെ മണ്ണ് പരിശോധിക്കുക</string>
+    <string name="ask_ai_advisor">AI ഉപദേശകരോട് ചോദിക്കുക</string>
+
+
+</resources>
+

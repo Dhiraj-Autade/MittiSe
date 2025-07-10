@@ -549,23 +549,23 @@ private fun getDummyUpdates(context: android.content.Context): List<Update> {
     return listOf(
         Update(
             id = 1,
-            title = "New Crop Advisory",
-            description = "Get the latest farming tips for this season",
-            date = "Today",
+            title = context.getString(R.string.update_title_crop_advisory),
+            description = context.getString(R.string.update_desc_crop_advisory),
+            date = context.getString(R.string.update_date_today),
             imageResId = R.drawable.ic_news
         ),
         Update(
             id = 2,
-            title = "Market Price Update",
-            description = "Check today's mandi prices for your crops",
-            date = "Today",
+            title = context.getString(R.string.update_title_market_price),
+            description = context.getString(R.string.update_desc_market_price),
+            date = context.getString(R.string.update_date_today),
             imageResId = R.drawable.ic_marketplace
         ),
         Update(
             id = 3,
-            title = "Weather Alert",
-            description = "Heavy rainfall expected in your area",
-            date = "Today",
+            title = context.getString(R.string.update_title_weather_alert),
+            description = context.getString(R.string.update_desc_weather_alert),
+            date = context.getString(R.string.update_date_today),
             imageResId = R.drawable.ic_weather
         )
     )
