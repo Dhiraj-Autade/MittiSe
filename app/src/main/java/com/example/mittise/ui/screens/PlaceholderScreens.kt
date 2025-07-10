@@ -102,7 +102,7 @@ object PlaceholderScreens {
             Spacer(modifier = Modifier.height(32.dp))
             // Coming Soon Badge
             GradientChip(
-                text = "Coming Soon",
+                text = stringResource(R.string.coming_soon),
                 onClick = { /* No action */ },
                 gradientColors = GradientColors.secondaryGradient
             )

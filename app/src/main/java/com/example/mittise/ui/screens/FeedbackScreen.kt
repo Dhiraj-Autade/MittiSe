@@ -47,7 +47,7 @@ fun FeedbackScreen() {
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "Send Feedback",
+                    text = stringResource(R.string.feedback_send_feedback),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold
                     ),
@@ -58,7 +58,7 @@ fun FeedbackScreen() {
                 OutlinedTextField(
                     value = "",
                     onValueChange = { },
-                    label = { Text("Your Email") },
+                    label = { Text(stringResource(R.string.feedback_your_email)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 12.dp),
@@ -74,7 +74,7 @@ fun FeedbackScreen() {
                 OutlinedTextField(
                     value = "",
                     onValueChange = { },
-                    label = { Text("Subject") },
+                    label = { Text(stringResource(R.string.feedback_subject)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 12.dp),
@@ -90,7 +90,7 @@ fun FeedbackScreen() {
                 OutlinedTextField(
                     value = "",
                     onValueChange = { },
-                    label = { Text("Your Message") },
+                    label = { Text(stringResource(R.string.feedback_your_message)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp)
@@ -113,11 +113,11 @@ fun FeedbackScreen() {
                 ) {
                     Icon(
                         imageVector = Icons.Default.Send,
-                        contentDescription = "Send",
+                        contentDescription = stringResource(R.string.feedback_send),
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Send Feedback")
+                    Text(stringResource(R.string.feedback_send_feedback))
                 }
             }
         }
@@ -133,7 +133,7 @@ fun FeedbackScreen() {
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "Other Ways to Contact",
+                    text = stringResource(R.string.feedback_other_ways),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold
                     ),
@@ -156,7 +156,7 @@ fun FeedbackScreen() {
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Email",
+                            text = stringResource(R.string.feedback_email),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Medium
                             )
@@ -185,7 +185,7 @@ fun FeedbackScreen() {
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Phone",
+                            text = stringResource(R.string.feedback_phone),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Medium
                             )
@@ -214,7 +214,7 @@ fun FeedbackScreen() {
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Social Media",
+                            text = stringResource(R.string.feedback_social_media),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Medium
                             )

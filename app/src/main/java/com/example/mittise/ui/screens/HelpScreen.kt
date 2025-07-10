@@ -133,10 +133,10 @@ fun HelpScreen() {
                 )
                 
                 val faqs = listOf(
-                    "Q: How do I register my products?" to "Go to Marketplace → Add Product and fill in the required details.",
-                    "Q: How do I check APMC prices?" to "Navigate to APMC section to view current market prices for various crops.",
-                    "Q: How do I change the language?" to "Go to Profile → Language and select your preferred language.",
-                    "Q: How do I contact other farmers?" to "Use the Social section to connect with the farming community."
+                    stringResource(R.string.faq_register_products_q) to stringResource(R.string.faq_register_products_a),
+                    stringResource(R.string.faq_check_apmc_q) to stringResource(R.string.faq_check_apmc_a),
+                    stringResource(R.string.faq_change_language_q) to stringResource(R.string.faq_change_language_a),
+                    stringResource(R.string.faq_contact_farmers_q) to stringResource(R.string.faq_contact_farmers_a)
                 )
                 
                 faqs.forEach { (question, answer) ->
