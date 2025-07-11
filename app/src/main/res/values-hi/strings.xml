@@ -83,6 +83,7 @@
     <string name="profile_help">मदद &amp; समर्थन</string>
     <string name="profile_about">के बारे में</string>
     <string name="profile_logout">लॉगआउट</string>
+    <string name="profile_login">लॉगिन</string>
     <string name="profile_status_active">Active Farmer</string>
     <string name="navigate">Navigate</string>
 

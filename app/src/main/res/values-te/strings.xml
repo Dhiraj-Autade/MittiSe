@@ -84,6 +84,7 @@
     <string name="profile_help">సహాయం &amp; సపోర్ట్</string>
     <string name="profile_about">గురించి</string>
     <string name="profile_logout">లాగ్ అవుట్</string>
+    <string name="profile_login">లాగిన్</string>
     <string name="profile_status_active">Active Farmer</string>
     <string name="navigate">Navigate</string>
 

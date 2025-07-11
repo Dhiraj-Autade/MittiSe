@@ -65,9 +65,8 @@ import androidx.compose.foundation.layout.Row
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MittiSeNavigation(
-    navController: NavHostController = rememberNavController()
-) {
+fun MittiSeMainApp(onNavigateToLogin: () -> Unit = {}) {
+    val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -168,7 +167,7 @@ fun MittiSeNavigation(
 
                 // Profile
                 composable(Screen.Profile.route) {
-                    ProfileScreen()
+                    ProfileScreen(onNavigateToLogin = onNavigateToLogin)
                 }
 
                 // Weather

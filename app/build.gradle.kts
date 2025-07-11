@@ -75,6 +75,7 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation("androidx.compose.runtime:runtime-livedata")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
@@ -132,5 +133,7 @@ dependencies {
     //Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.8.1")) // Use BOM
     implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
 
 }

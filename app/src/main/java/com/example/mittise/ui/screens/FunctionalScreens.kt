@@ -21,8 +21,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.mittise.R
 import com.example.mittise.ui.theme.*
+import com.example.mittise.ui.viewmodels.ProfileViewModel
+import com.example.mittise.ui.viewmodels.AuthViewModel
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -504,7 +508,21 @@ fun ChatInputSection(
 
 // Profile Screen
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(
+    profileViewModel: ProfileViewModel = hiltViewModel(),
+    onNavigateToLogin: () -> Unit = {}
+) {
+    val uiState by profileViewModel.uiState.collectAsStateWithLifecycle()
+    val authViewModel: AuthViewModel = hiltViewModel()
+    val authState by authViewModel.uiState.collectAsStateWithLifecycle()
+    
+    // Navigate to login if user logs out while on profile screen
+    LaunchedEffect(authState.isLoggedIn) {
+        if (!authState.isLoggedIn) {
+            onNavigateToLogin()
+        }
+    }
+    
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -551,69 +569,149 @@ fun ProfileScreen() {
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    Text(
-                        text = stringResource(R.string.profile_name),
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                    if (uiState.isLoading && authState.isLoggedIn) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.primary
                         )
+                    } else if (authState.isLoggedIn) {
+                        Text(
+                            text = profileViewModel.getDisplayName(),
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+                        Text(
+                            text = "Active Farmer",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
+                            )
+                        )
+                    } else {
+                        Text(
+                            text = "Guest User",
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+                        Text(
+                            text = "Please login to access your profile",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+        // Profile Actions (only for logged-in users)
+        if (authState.isLoggedIn) {
+            item {
+                Button(
+                    onClick = { /* Navigate to edit profile */ },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
                     )
-                    Text(
-                        text = stringResource(R.string.profile_status_active),
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
-                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = stringResource(R.string.profile_edit),
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.profile_edit))
+                }
+            }
+        }
+
+        // Profile Stats (only for logged-in users)
+        if (authState.isLoggedIn) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    ProfileStatCard(
+                        title = stringResource(R.string.profile_posts),
+                        value = "12",
+                        icon = Icons.Filled.Article
+                    )
+                    ProfileStatCard(
+                        title = stringResource(R.string.profile_followers),
+                        value = "45",
+                        icon = Icons.Filled.People
+                    )
+                    ProfileStatCard(
+                        title = stringResource(R.string.profile_following),
+                        value = "23",
+                        icon = Icons.Filled.People
                     )
                 }
             }
         }
 
-        // Profile Actions
-        item {
-            Button(
-                onClick = { /* Navigate to edit profile */ },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Edit,
-                    contentDescription = stringResource(R.string.profile_edit),
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(stringResource(R.string.profile_edit))
-            }
-        }
-
-        // Profile Stats
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                ProfileStatCard(
-                    title = stringResource(R.string.profile_posts),
-                    value = "12",
-                    icon = Icons.Filled.Article
-                )
-                ProfileStatCard(
-                    title = stringResource(R.string.profile_followers),
-                    value = "45",
-                    icon = Icons.Filled.People
-                )
-                ProfileStatCard(
-                    title = stringResource(R.string.profile_following),
-                    value = "23",
-                    icon = Icons.Filled.People
-                )
-            }
-        }
-
         // Profile Options
-        items(getProfileOptions()) { option ->
+        items(getProfileOptions(profileViewModel, authState.isLoggedIn, onNavigateToLogin)) { option ->
             ProfileOptionCard(option = option)
+        }
+    }
+    
+    // Logout Confirmation Dialog (only for logged-in users)
+    if (authState.isLoggedIn && uiState.showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { profileViewModel.hideLogoutDialog() },
+            title = {
+                Text(
+                    text = "Logout",
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to logout?",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val success = profileViewModel.logout()
+                        if (success) {
+                            // Navigation will be handled by the auth state change
+                        }
+                    }
+                ) {
+                    Text(
+                        text = "Yes",
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { profileViewModel.hideLogoutDialog() }
+                ) {
+                    Text(
+                        text = "Cancel",
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        )
+    }
+    
+    // Error handling
+    uiState.errorMessage?.let { message ->
+        LaunchedEffect(message) {
+            // You can show a snackbar here if needed
+            profileViewModel.clearErrorMessage()
         }
     }
 }
@@ -1189,11 +1287,24 @@ private fun getSampleCommunityPosts(): List<CommunityPost> = listOf(
     CommunityPost("3", "Gurpreet Singh", "Weather forecast shows rain next week. Perfect for sowing rice! ☔", 20, 3, "1 day ago")
 )
 
-private fun getProfileOptions(): List<ProfileOption> = listOf(
+private fun getProfileOptions(
+    profileViewModel: ProfileViewModel, 
+    isLoggedIn: Boolean, 
+    onNavigateToLogin: () -> Unit
+): List<ProfileOption> = listOf(
     ProfileOption(R.string.profile_settings, Icons.Filled.Settings) { },
     ProfileOption(R.string.profile_notifications, Icons.Filled.Notifications) { },
     ProfileOption(R.string.profile_privacy, Icons.Filled.Security) { },
-    ProfileOption(R.string.profile_help, Icons.Filled.Help) { }
+    ProfileOption(R.string.profile_help, Icons.Filled.Help) { },
+    if (isLoggedIn) {
+        ProfileOption(R.string.profile_logout, Icons.Filled.Logout) { 
+            profileViewModel.showLogoutDialog()
+        }
+    } else {
+        ProfileOption(R.string.profile_login, Icons.Filled.Login) { 
+            onNavigateToLogin()
+        }
+    }
 )
 
 private fun getWeatherForecast(): List<WeatherForecast> = listOf(

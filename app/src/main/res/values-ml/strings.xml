@@ -83,6 +83,7 @@
     <string name="profile_help">സഹായം &amp; പിന്തുണ</string>
     <string name="profile_about">അപേക്ഷയെ കുറിച്ച്</string>
     <string name="profile_logout">ലോഗ്ഔട്ട്</string>
+    <string name="profile_login">ലോഗിൻ</string>
     <string name="profile_status_active">സജീവമായ കർഷകൻ</string>
     <string name="navigate">നാവിഗേറ്റ് ചെയ്യുക</string>
 

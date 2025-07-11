@@ -83,6 +83,7 @@
     <string name="profile_help">உதவி &amp; ஆதரவு</string>
     <string name="profile_about">தகவல்கள்</string>
     <string name="profile_logout">வெளியேறு</string>
+    <string name="profile_login">உள்நுழைய</string>
     <string name="profile_status_active">Active Farmer</string>
     <string name="navigate">Navigate</string>
 
