@@ -235,11 +235,11 @@ class FakeMarketplaceApi : MarketplaceApi {
     }
 
     override suspend fun getProductDetails(productId: String): Product {
-        return getProducts().find { it.id == productId } ?: getProducts().first()
+        return getProducts(null, null, 1, 20).find { it.id == productId } ?: getProducts(null, null, 1, 20).first()
     }
 
     override suspend fun getFarmerProductDetails(productId: String): FarmerProduct {
-        return getFarmerProducts().find { it.id == productId } ?: getFarmerProducts().first()
+        return getFarmerProducts(null, null, 1, 20).find { it.id == productId } ?: getFarmerProducts(null, null, 1, 20).first()
     }
 
     override suspend fun getCategories(): List<String> {

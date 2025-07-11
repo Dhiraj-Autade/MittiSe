@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.mittise.data.api.MarketplaceApi
 import com.example.mittise.data.api.WeatherApi
 import com.example.mittise.data.repository.WeatherRepository
+import com.example.mittise.data.repository.MarketplaceRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -59,5 +60,12 @@ object NetworkModule {
     fun provideWeatherRepository(weatherApi: WeatherApi): WeatherRepository {
         Log.d(TAG, "provideWeatherRepository: Creating weather repository")
         return WeatherRepository(weatherApi)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMarketplaceRepository(marketplaceApi: MarketplaceApi): MarketplaceRepository {
+        Log.d(TAG, "provideMarketplaceRepository: Creating marketplace repository")
+        return MarketplaceRepository(marketplaceApi)
     }
 } 

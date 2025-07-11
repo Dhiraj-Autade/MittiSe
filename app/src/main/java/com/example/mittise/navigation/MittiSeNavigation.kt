@@ -62,6 +62,8 @@ import com.example.mittise.util.LocaleHelper
 import com.example.mittise.ui.screens.LanguageScreen
 import com.example.mittise.ui.theme.*
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.text.style.TextOverflow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -356,7 +358,10 @@ fun EnhancedBottomNavigation(
                         text = item.title,
                         style = MaterialTheme.typography.bodySmall.copy(
                             fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal
-                        )
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 },
                 selected = selected,
@@ -525,7 +530,8 @@ fun EnhancedDrawerItem(
     EnhancedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 4.dp)
+            .clickable { onClick() },
         gradientColors = gradientColors,
         elevation = if (selected) 8 else 4,
         cornerRadius = 12
@@ -569,6 +575,9 @@ fun EnhancedDrawerItem(
 @Composable
 fun EnhancedDrawerFooter() {
     EnhancedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { /* Handle logout */ },
         gradientColors = GradientColors.secondaryGradient,
         elevation = 8,
         cornerRadius = 16
