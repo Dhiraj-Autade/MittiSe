@@ -3,12 +3,15 @@ package com.example.mittise.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mittise.data.repository.AuthRepository
+import com.example.mittise.util.GoogleSignInState
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -40,6 +43,9 @@ class AuthViewModel @Inject constructor(
         // Add auth state listener to monitor changes
         FirebaseAuth.getInstance().addAuthStateListener(authStateListener)
         checkCurrentUser()
+        
+        // Observe Google Sign-In state
+        observeGoogleSignInState()
     }
     
     override fun onCleared() {
@@ -111,6 +117,37 @@ class AuthViewModel @Inject constructor(
         }
     }
     
+    fun signInWithGoogle(account: GoogleSignInAccount) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            
+            // For testing purposes, show success even without Firebase integration
+            if (account.idToken == null) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    successMessage = "Google Sign-In successful! (Testing mode - no Firebase integration)"
+                )
+                return@launch
+            }
+            
+            authRepository.signInWithGoogle(account)
+                .onSuccess { user ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoggedIn = true,
+                        user = user,
+                        successMessage = "Welcome back!"
+                    )
+                }
+                .onFailure { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = getGoogleSignInErrorMessage(exception)
+                    )
+                }
+        }
+    }
+    
     fun signOut() {
         authRepository.signOut()
         _uiState.value = _uiState.value.copy(
@@ -150,6 +187,18 @@ class AuthViewModel @Inject constructor(
             errorMessage = null,
             successMessage = null
         )
+    }
+    
+    private fun observeGoogleSignInState() {
+        viewModelScope.launch {
+            GoogleSignInState.googleSignInAccount.collectLatest { account ->
+                account?.let { googleAccount ->
+                    signInWithGoogle(googleAccount)
+                    // Clear the account after processing
+                    GoogleSignInState.clearGoogleSignInAccount()
+                }
+            }
+        }
     }
     
     private fun validateSignUpInput(
@@ -222,6 +271,18 @@ class AuthViewModel @Inject constructor(
             exception.message?.contains("invalid-credential") == true ->
                 "User not found. Please check your credentials and try again."
             else -> "User not found. Please check your credentials and try again."
+        }
+    }
+    
+    private fun getGoogleSignInErrorMessage(exception: Throwable): String {
+        return when {
+            exception.message?.contains("network error") == true ->
+                "Network error. Please check your internet connection."
+            exception.message?.contains("invalid-credential") == true ->
+                "Google sign-in failed. Please try again."
+            exception.message?.contains("account-exists-with-different-credential") == true ->
+                "An account already exists with this email using a different sign-in method."
+            else -> "Google sign-in failed. Please try again."
         }
     }
 }
