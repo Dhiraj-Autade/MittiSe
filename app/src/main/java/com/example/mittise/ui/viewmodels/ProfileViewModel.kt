@@ -1,15 +1,20 @@
 package com.example.mittise.ui.viewmodels
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mittise.data.repository.AuthRepository
+import com.example.mittise.data.repository.ProfileRepository
+import com.example.mittise.util.NetworkUtil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 data class ProfileUiState(
@@ -20,16 +25,21 @@ data class ProfileUiState(
     val errorMessage: String? = null,
     val successMessage: String? = null,
     val isEditing: Boolean = false,
-    val showImageSourceDialog: Boolean = false
+    val showImageSourceDialog: Boolean = false,
+    val isUploadingImage: Boolean = false
 )
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val profileRepository: ProfileRepository,
+    private val networkUtil: NetworkUtil
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
+    
+    private val storage = FirebaseStorage.getInstance()
     
     private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
         val currentUser = auth.currentUser
@@ -113,7 +123,15 @@ class ProfileViewModel @Inject constructor(
             "firstName" to (user.displayName?.split(" ")?.firstOrNull() ?: ""),
             "lastName" to (user.displayName?.split(" ")?.drop(1)?.joinToString(" ") ?: ""),
             "email" to (user.email ?: ""),
-            "createdAt" to System.currentTimeMillis()
+            "phone" to "",
+            "location" to "",
+            "bio" to "",
+            "yearsExperience" to "",
+            "farmSize" to "",
+            "cropsGrown" to "",
+            "profileImageUrl" to (user.photoUrl?.toString() ?: ""),
+            "createdAt" to System.currentTimeMillis(),
+            "updatedAt" to System.currentTimeMillis()
         )
     }
     
@@ -296,11 +314,98 @@ class ProfileViewModel @Inject constructor(
         // Reset any form-related state if needed
         _uiState.value = _uiState.value.copy(
             isEditing = false,
-            showImageSourceDialog = false
+            showImageSourceDialog = false,
+            isUploadingImage = false
         )
     }
     
     fun refreshProfile() {
         loadUserProfile()
+    }
+    
+    // Upload profile image to Firebase Storage
+    suspend fun uploadProfileImage(imageUri: Uri): Result<String> {
+        val currentUser = _uiState.value.user ?: return Result.failure(Exception("No user logged in"))
+        
+        return try {
+            _uiState.value = _uiState.value.copy(isUploadingImage = true)
+            
+            // Create a reference to store the image
+            val imageRef = storage.reference
+                .child("profile_images")
+                .child("${currentUser.uid}_${System.currentTimeMillis()}.jpg")
+            
+            // Upload the image
+            val uploadTask = imageRef.putFile(imageUri).await()
+            
+            // Get the download URL
+            val downloadUrl = imageRef.downloadUrl.await()
+            
+            _uiState.value = _uiState.value.copy(isUploadingImage = false)
+            
+            Result.success(downloadUrl.toString())
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                isUploadingImage = false,
+                errorMessage = "Failed to upload image: ${e.message}"
+            )
+            Result.failure(e)
+        }
+    }
+    
+    // Enhanced update profile method that handles image upload
+    fun updateProfileWithImage(
+        firstName: String,
+        lastName: String,
+        phone: String,
+        location: String,
+        bio: String? = null,
+        yearsExperience: String? = null,
+        farmSize: String? = null,
+        cropsGrown: String? = null,
+        imageUri: Uri? = null
+    ) {
+        // Check network connectivity first
+        if (!networkUtil.isNetworkAvailable()) {
+            _uiState.value = _uiState.value.copy(
+                errorMessage = "No network connection. Please check your internet connection and try again."
+            )
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                var profileImageUrl: String? = null
+                
+                // Upload image if provided
+                if (imageUri != null) {
+                    uploadProfileImage(imageUri)
+                        .onSuccess { url -> profileImageUrl = url }
+                        .onFailure { exception ->
+                            _uiState.value = _uiState.value.copy(
+                                errorMessage = "Failed to upload image: ${exception.message}"
+                            )
+                            return@launch
+                        }
+                }
+                
+                // Update profile with or without new image
+                updateProfile(
+                    firstName = firstName,
+                    lastName = lastName,
+                    phone = phone,
+                    location = location,
+                    bio = bio,
+                    yearsExperience = yearsExperience,
+                    farmSize = farmSize,
+                    cropsGrown = cropsGrown,
+                    profileImageUrl = profileImageUrl
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = "Failed to update profile: ${e.message}"
+                )
+            }
+        }
     }
 }

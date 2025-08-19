@@ -16,6 +16,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.mittise.R
 import com.example.mittise.ui.screens.*
+import com.example.mittise.util.NavigationUtil
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalDrawerSheet
@@ -114,13 +115,11 @@ fun MittiSeMainApp(onNavigateToLogin: () -> Unit = {}) {
                 EnhancedBottomNavigation(
                     currentDestination = currentDestination,
                     onItemClick = { route ->
-                        navController.navigate(route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                        NavigationUtil.navigateWithBottomNav(
+                            navController = navController,
+                            route = route,
+                            currentRoute = currentDestination?.route
+                        )
                     }
                 )
             }
