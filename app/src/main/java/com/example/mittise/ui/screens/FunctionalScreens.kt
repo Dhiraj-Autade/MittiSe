@@ -1816,7 +1816,8 @@ fun EditProfileScreenContent(
             
             Button(
                 onClick = {
-                    profileViewModel.updateProfile(
+                    // Use the new method that handles image upload
+                    profileViewModel.updateProfileWithImage(
                         firstName = firstName,
                         lastName = lastName,
                         phone = phone,
@@ -1825,22 +1826,22 @@ fun EditProfileScreenContent(
                         yearsExperience = yearsExperience,
                         farmSize = farmSize,
                         cropsGrown = cropsGrown,
-                        profileImageUrl = selectedImageUri?.toString()
+                        imageUri = selectedImageUri
                     )
                 },
                 modifier = Modifier.weight(1f),
-                enabled = isFormValid && !uiState.isLoading,
+                enabled = isFormValid && !uiState.isLoading && !uiState.isUploadingImage,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
-                if (uiState.isLoading) {
+                if (uiState.isLoading || uiState.isUploadingImage) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text("Save Changes")
+                    Text(if (uiState.isUploadingImage) "Uploading..." else "Save Changes")
                 }
             }
         }
