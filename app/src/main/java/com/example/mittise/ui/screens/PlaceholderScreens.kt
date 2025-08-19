@@ -45,12 +45,10 @@ object PlaceholderScreens {
     }
 
     @Composable
-    fun EditProfileScreen() {
-        createPlaceholderScreen(
-            title = "Edit Profile",
-            icon = Icons.Default.Person,
-            description = "Profile editing features coming soon"
-        )
+    fun EditProfileScreen(
+        onNavigateBack: () -> Unit = {}
+    ) {
+        EditProfileScreenContent(onNavigateBack = onNavigateBack)
     }
 
     @Composable

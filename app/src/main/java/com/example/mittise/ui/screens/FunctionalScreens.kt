@@ -10,7 +10,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Work
+import androidx.compose.material.icons.filled.Agriculture
+import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material3.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -42,10 +47,55 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.ui.graphics.vector.ImageVector
+import android.net.Uri
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontStyle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import com.example.mittise.data.model.FarmerProduct
+import com.example.mittise.data.model.Product
+import com.example.mittise.ui.marketplace.MarketplaceViewModel
+import com.example.mittise.ui.marketplace.MarketplaceItem
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.rememberCoroutineScope
+import java.text.SimpleDateFormat
+import java.util.*
+import java.io.File
+import android.content.Intent
+import android.content.Context
+
+fun createProfileTempImageFile(context: Context): Uri {
+    val tempFile = File.createTempFile("profile_image_${System.currentTimeMillis()}", ".jpg", context.cacheDir)
+    return Uri.fromFile(tempFile)
+}
 
 // APMC Screen - Agricultural Produce Market Committee
 @Composable
 fun ApmcScreen() {
+    val viewModel: com.example.mittise.ui.apmc.ApmcViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    val uiState by viewModel.uiState.collectAsState()
+    
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -60,6 +110,7 @@ fun ApmcScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Header
         item {
             EnhancedCard(
                 gradientColors = GradientColors.primaryGradient,
@@ -86,58 +137,478 @@ fun ApmcScreen() {
             }
         }
 
-        // Market Prices Section
+        // Filter Section
         item {
-            Text(
-                text = "Today's Market Prices",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                modifier = Modifier.padding(vertical = 8.dp)
+            FilterSection(
+                uiState = uiState,
+                onStateChanged = { viewModel.updateStateFilter(it) },
+                onDistrictChanged = { viewModel.updateDistrictFilter(it) },
+                onCommodityChanged = { viewModel.updateCommodityFilter(it) },
+                onMarketChanged = { viewModel.updateMarketFilter(it) },
+                onClearFilters = { viewModel.clearFilters() }
             )
         }
 
-        // Sample Market Prices
-        items(getSampleMarketPrices()) { price ->
-            MarketPriceCard(price = price)
-        }
-
-        // Market Information
-        item {
-            EnhancedCard(
-                gradientColors = GradientColors.tertiaryGradient,
-                elevation = 8,
-                cornerRadius = 16
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
+        // Loading state
+        if (uiState.isLoading) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Info,
-                            contentDescription = "Info",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(24.dp)
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Market Information",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
+                            text = "Loading live mandi prices...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "APMC prices are updated daily. Prices may vary based on market conditions, quality, and demand.",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
+                }
+            }
+        }
+
+        // Error state
+        uiState.error?.let { error ->
+            item {
+                EnhancedCard(
+                    gradientColors = GradientColors.errorGradient,
+                    elevation = 8,
+                    cornerRadius = 16
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = "Error",
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(32.dp)
                         )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Failed to load mandi prices",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = error,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Button(
+                            onClick = { viewModel.refresh() },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Retry",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Retry")
+                        }
+                    }
+                }
+            }
+        }
+
+        // Results Summary
+        if (!uiState.isLoading && uiState.mandiPrices.isNotEmpty()) {
+            item {
+                EnhancedCard(
+                    gradientColors = GradientColors.successGradient,
+                    elevation = 8,
+                    cornerRadius = 16
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Live Market Prices",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "${uiState.mandiPrices.size} records found",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Button(
+                                onClick = { viewModel.refresh() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
+                                ),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = "Refresh",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Refresh")
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Button(
+                                onClick = { viewModel.clearFilters() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary
+                                ),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "Clear",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Clear Filters")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Market Prices List
+        if (!uiState.isLoading && uiState.mandiPrices.isNotEmpty()) {
+            items(uiState.mandiPrices) { mandiPrice ->
+                MandiPriceCard(mandiPrice = mandiPrice)
+            }
+        }
+
+        // No Results
+        if (!uiState.isLoading && uiState.mandiPrices.isEmpty() && uiState.error == null) {
+            item {
+                EnhancedCard(
+                    gradientColors = GradientColors.secondaryGradient,
+                    elevation = 8,
+                    cornerRadius = 16
+                ) {
+                    Column(
+                        modifier = Modifier.padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "No Results",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "No prices found",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Try adjusting your filters or refresh the data",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FilterSection(
+    uiState: com.example.mittise.ui.apmc.ApmcUiState,
+    onStateChanged: (String) -> Unit,
+    onDistrictChanged: (String) -> Unit,
+    onCommodityChanged: (String) -> Unit,
+    onMarketChanged: (String) -> Unit,
+    onClearFilters: () -> Unit
+) {
+    EnhancedCard(
+        gradientColors = GradientColors.secondaryGradient,
+        elevation = 8,
+        cornerRadius = 16
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Filter Market Prices",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // State Filter
+            FilterDropdown(
+                label = "State",
+                options = uiState.availableStates,
+                selectedOption = uiState.filters.selectedState ?: "All States",
+                onOptionSelected = onStateChanged,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // District Filter
+            FilterDropdown(
+                label = "District",
+                options = uiState.availableDistricts,
+                selectedOption = uiState.filters.selectedDistrict ?: "All Districts",
+                onOptionSelected = onDistrictChanged,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Commodity Filter
+            FilterDropdown(
+                label = "Commodity",
+                options = uiState.availableCommodities,
+                selectedOption = uiState.filters.selectedCommodity ?: "All Commodities",
+                onOptionSelected = onCommodityChanged,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Market Filter
+            FilterDropdown(
+                label = "Market",
+                options = uiState.availableMarkets,
+                selectedOption = uiState.filters.selectedMarket ?: "All Markets",
+                onOptionSelected = onMarketChanged,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Clear Filters Button
+            Button(
+                onClick = onClearFilters,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = "Clear",
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Clear All Filters")
+            }
+        }
+    }
+}
+
+@Composable
+fun FilterDropdown(
+    label: String,
+    options: List<String>,
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    
+    Column(modifier = modifier) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = FontWeight.Medium
+            ),
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+        
+        OutlinedTextField(
+            value = selectedOption,
+            onValueChange = { },
+            readOnly = true,
+            trailingIcon = {
+                Icon(
+                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = "Dropdown",
+                    modifier = Modifier.clickable { expanded = !expanded }
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = !expanded },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+            )
+        )
+        
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surface)
+                .width(IntrinsicSize.Min)
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onOptionSelected(option)
+                        expanded = false
+                    },
+                    modifier = Modifier.background(
+                        if (option == selectedOption) 
+                            MaterialTheme.colorScheme.primaryContainer 
+                        else 
+                            Color.Transparent
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MandiPriceCard(mandiPrice: com.example.mittise.data.model.MandiPrice) {
+    EnhancedCard(
+        gradientColors = GradientColors.primaryGradient,
+        elevation = 6,
+        cornerRadius = 12
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // Header with commodity and market
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = mandiPrice.commodityName,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = mandiPrice.marketName,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                     )
                 }
+                Text(
+                    text = mandiPrice.modalPriceFormatted,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Price details
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = "Price Range",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    Text(
+                        text = mandiPrice.priceRange,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Column {
+                    Text(
+                        text = "Arrival",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    Text(
+                        text = mandiPrice.arrivalFormatted,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Column {
+                    Text(
+                        text = "Location",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    Text(
+                        text = mandiPrice.location,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Additional info
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Variety: ${mandiPrice.commodityVariety}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+                Text(
+                    text = "Unit: ${mandiPrice.priceUnit}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
             }
         }
     }
@@ -510,7 +981,8 @@ fun ChatInputSection(
 @Composable
 fun ProfileScreen(
     profileViewModel: ProfileViewModel = hiltViewModel(),
-    onNavigateToLogin: () -> Unit = {}
+    onNavigateToLogin: () -> Unit = {},
+    onNavigateToEditProfile: () -> Unit = {}
 ) {
     val uiState by profileViewModel.uiState.collectAsStateWithLifecycle()
     val authViewModel: AuthViewModel = hiltViewModel()
@@ -521,6 +993,11 @@ fun ProfileScreen(
         if (!authState.isLoggedIn) {
             onNavigateToLogin()
         }
+    }
+    
+    // Refresh profile data when screen is focused
+    LaunchedEffect(Unit) {
+        profileViewModel.refreshProfile()
     }
     
     LazyColumn(
@@ -547,23 +1024,32 @@ fun ProfileScreen(
                     modifier = Modifier.padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Profile Avatar
+                    // Profile Avatar with Image Support
                     Card(
-                        modifier = Modifier.size(80.dp),
-                        shape = RoundedCornerShape(40.dp)
+                        modifier = Modifier.size(100.dp),
+                        shape = RoundedCornerShape(50.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.primary),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Person,
-                                contentDescription = "Profile",
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(40.dp)
+                        if (authState.isLoggedIn && profileViewModel.getProfileImageUrl() != null) {
+                            AsyncImage(
+                                model = profileViewModel.getProfileImageUrl(),
+                                contentDescription = "Profile Image",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
                             )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(MaterialTheme.colorScheme.primary),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Person,
+                                    contentDescription = "Profile",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(50.dp)
+                                )
+                            }
                         }
                     }
                     
@@ -586,6 +1072,39 @@ fun ProfileScreen(
                             text = "Active Farmer",
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
+                            )
+                        )
+                        
+                        // Bio section
+                        val bio = profileViewModel.getBio()
+                        Spacer(modifier = Modifier.height(8.dp))
+                        if (bio.isNotEmpty()) {
+                            Text(
+                                text = bio,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                                ),
+                                textAlign = TextAlign.Center,
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        } else {
+                            Text(
+                                text = "No bio added yet",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                    fontStyle = FontStyle.Italic
+                                ),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        
+                        // Join date
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Member since ${profileViewModel.getJoinDate()}",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             )
                         )
                     } else {
@@ -611,7 +1130,7 @@ fun ProfileScreen(
         if (authState.isLoggedIn) {
             item {
                 Button(
-                    onClick = { /* Navigate to edit profile */ },
+                    onClick = { onNavigateToEditProfile() },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
@@ -628,28 +1147,78 @@ fun ProfileScreen(
             }
         }
 
-        // Profile Stats (only for logged-in users)
+        // Farming Information (only for logged-in users)
         if (authState.isLoggedIn) {
             item {
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     ProfileStatCard(
-                        title = stringResource(R.string.profile_posts),
-                        value = "12",
-                        icon = Icons.Filled.Article
+                        title = stringResource(R.string.profile_years_experience),
+                        value = "${profileViewModel.getYearsExperience()} yrs",
+                        icon = Icons.Filled.Work
                     )
                     ProfileStatCard(
-                        title = stringResource(R.string.profile_followers),
-                        value = "45",
-                        icon = Icons.Filled.People
+                        title = stringResource(R.string.profile_farm_size),
+                        value = "${profileViewModel.getFarmSize()} acres",
+                        icon = Icons.Filled.Agriculture
                     )
                     ProfileStatCard(
-                        title = stringResource(R.string.profile_following),
-                        value = "23",
-                        icon = Icons.Filled.People
+                        title = stringResource(R.string.profile_products_registered),
+                        value = "5",
+                        icon = Icons.Filled.Inventory
                     )
+                }
+            }
+        }
+
+        // Farming Details (only for logged-in users)
+        if (authState.isLoggedIn) {
+            item {
+                EnhancedCard(
+                    gradientColors = GradientColors.cardGradient,
+                    elevation = 8,
+                    cornerRadius = 16
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Agriculture,
+                                contentDescription = "Crops",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = stringResource(R.string.profile_crops_grown),
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        val cropsGrown = profileViewModel.getCropsGrown()
+                        if (cropsGrown.isNotEmpty()) {
+                            Text(
+                                text = cropsGrown,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            Text(
+                                text = "No crops specified yet",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -715,6 +1284,590 @@ fun ProfileScreen(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditProfileScreenContent(
+    onNavigateBack: () -> Unit = {}
+) {
+    val profileViewModel: ProfileViewModel = hiltViewModel()
+    val uiState by profileViewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val isDark = isSystemInDarkTheme()
+    
+    var firstName by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf("") }
+    var bio by remember { mutableStateOf("") }
+    var yearsExperience by remember { mutableStateOf("") }
+    var farmSize by remember { mutableStateOf("") }
+    var cropsGrown by remember { mutableStateOf("") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var showImageSourceDialog by remember { mutableStateOf(false) }
+    var isFormInitialized by remember { mutableStateOf(false) }
+    
+    // Reset form state when screen is loaded
+    LaunchedEffect(Unit) {
+        profileViewModel.resetFormState()
+    }
+    
+    // Initialize form with current user data
+    LaunchedEffect(uiState.userInfo) {
+        uiState.userInfo?.let { userInfo ->
+            if (!isFormInitialized) {
+                firstName = userInfo["firstName"] as? String ?: ""
+                lastName = userInfo["lastName"] as? String ?: ""
+                phone = userInfo["phone"] as? String ?: ""
+                location = userInfo["location"] as? String ?: ""
+                
+                // Clean bio field - remove any error messages
+                val rawBio = userInfo["bio"] as? String ?: ""
+                bio = if (rawBio.contains("NOT_FOUND") || rawBio.contains("Firestore document")) {
+                    ""
+                } else {
+                    rawBio
+                }
+                
+                yearsExperience = userInfo["yearsExperience"] as? String ?: ""
+                farmSize = userInfo["farmSize"] as? String ?: ""
+                cropsGrown = userInfo["cropsGrown"] as? String ?: ""
+                selectedImageUri = (userInfo["profileImageUrl"] as? String)?.let { Uri.parse(it) }
+                isFormInitialized = true
+            }
+        }
+    }
+    
+    // Photo picker launchers
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { selectedImageUri = it }
+    }
+    
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (!success) {
+            selectedImageUri = null
+        }
+    }
+    
+    // Form validation
+    val isFormValid = firstName.isNotEmpty() && lastName.isNotEmpty() && phone.isNotEmpty() && location.isNotEmpty()
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    )
+                )
+            )
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Header
+        EnhancedCard(
+            gradientColors = GradientColors.primaryGradient,
+            elevation = 12,
+            cornerRadius = 20
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Edit Profile",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.surface
+                )
+                Text(
+                    text = "Update your personal information",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+        }
+        
+        // Success Message
+        uiState.successMessage?.let { message ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Success",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 2.dp
+                    )
+                }
+            }
+        }
+        
+        // Error Message
+        uiState.errorMessage?.let { message ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Error,
+                        contentDescription = "Error",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            }
+        }
+        
+        // Profile Image Section
+        EnhancedCard(
+            gradientColors = GradientColors.cardGradient,
+            elevation = 8,
+            cornerRadius = 16
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Profile Picture",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Box {
+                    Card(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clickable { showImageSourceDialog = true },
+                        shape = RoundedCornerShape(60.dp)
+                    ) {
+                        if (selectedImageUri != null) {
+                            AsyncImage(
+                                model = selectedImageUri,
+                                contentDescription = "Profile Image",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(MaterialTheme.colorScheme.primary),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = "Profile",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                            }
+                        }
+                    }
+                    
+                    // Image selected indicator
+                    if (selectedImageUri != null) {
+                        Card(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(4.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit Image",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .padding(4.dp)
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { showImageSourceDialog = true }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CameraAlt,
+                            contentDescription = "Camera",
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(if (selectedImageUri == null) "Add Photo" else "Change Photo")
+                    }
+                    if (selectedImageUri != null) {
+                        OutlinedButton(
+                            onClick = { selectedImageUri = null }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Remove Photo",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Remove")
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Image Source Dialog
+        if (showImageSourceDialog) {
+            AlertDialog(
+                onDismissRequest = { showImageSourceDialog = false },
+                title = { Text("Select Image Source") },
+                text = { Text("Choose how you want to update your profile photo") },
+                confirmButton = {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                showImageSourceDialog = false
+                                galleryLauncher.launch("image/*")
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PhotoLibrary,
+                                contentDescription = "Gallery",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Gallery")
+                        }
+                        Button(
+                            onClick = {
+                                showImageSourceDialog = false
+                                selectedImageUri = createProfileTempImageFile(context)
+                                cameraLauncher.launch(selectedImageUri)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CameraAlt,
+                                contentDescription = "Camera",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Camera")
+                        }
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showImageSourceDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+        
+        // Personal Information
+        EnhancedCard(
+            gradientColors = GradientColors.cardGradient,
+            elevation = 8,
+            cornerRadius = 16
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp)
+            ) {
+                Text(
+                    text = "Personal Information",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                // First Name
+                OutlinedTextField(
+                    value = firstName,
+                    onValueChange = { firstName = it },
+                    label = { Text("First Name *") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
+                        containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Last Name
+                OutlinedTextField(
+                    value = lastName,
+                    onValueChange = { lastName = it },
+                    label = { Text("Last Name *") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
+                        containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Phone Number
+                OutlinedTextField(
+                    value = phone,
+                    onValueChange = { phone = it },
+                    label = { Text("Phone Number *") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
+                        containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Location
+                OutlinedTextField(
+                    value = location,
+                    onValueChange = { location = it },
+                    label = { Text("Location *") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
+                        containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Bio
+                OutlinedTextField(
+                    value = bio,
+                    onValueChange = { newBio -> 
+                        // Filter out error messages from bio field
+                        if (!newBio.contains("NOT_FOUND") && !newBio.contains("Firestore document")) {
+                            bio = newBio
+                        }
+                    },
+                    label = { Text(stringResource(R.string.profile_bio)) },
+                    placeholder = { Text(stringResource(R.string.profile_bio_hint)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3,
+                    maxLines = 5,
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
+                        containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+            }
+        }
+        
+        // Farming Information
+        EnhancedCard(
+            gradientColors = GradientColors.cardGradient,
+            elevation = 8,
+            cornerRadius = 16
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.profile_farming_experience),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                // Years of Experience
+                OutlinedTextField(
+                    value = yearsExperience,
+                    onValueChange = { yearsExperience = it },
+                    label = { Text(stringResource(R.string.profile_years_experience)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
+                        containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Farm Size
+                OutlinedTextField(
+                    value = farmSize,
+                    onValueChange = { farmSize = it },
+                    label = { Text(stringResource(R.string.profile_farm_size)) },
+                    placeholder = { Text(stringResource(R.string.profile_farm_size_hint)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
+                        containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Crops Grown
+                OutlinedTextField(
+                    value = cropsGrown,
+                    onValueChange = { cropsGrown = it },
+                    label = { Text(stringResource(R.string.profile_crops_grown)) },
+                    placeholder = { Text(stringResource(R.string.profile_crops_grown_hint)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
+                        containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+            }
+        }
+        
+        // Action Buttons
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedButton(
+                onClick = { onNavigateBack() },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text("Cancel")
+            }
+            
+            Button(
+                onClick = {
+                    profileViewModel.updateProfile(
+                        firstName = firstName,
+                        lastName = lastName,
+                        phone = phone,
+                        location = location,
+                        bio = bio,
+                        yearsExperience = yearsExperience,
+                        farmSize = farmSize,
+                        cropsGrown = cropsGrown,
+                        profileImageUrl = selectedImageUri?.toString()
+                    )
+                },
+                modifier = Modifier.weight(1f),
+                enabled = isFormValid && !uiState.isLoading,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Save Changes")
+                }
+            }
+        }
+        
+        // Required fields note
+        Text(
+            text = "* Required fields",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+    }
+    
+    // Handle success and error messages
+    LaunchedEffect(uiState.successMessage, uiState.errorMessage) {
+        uiState.successMessage?.let {
+            delay(2000) // Reduced delay for better UX
+            profileViewModel.clearSuccessMessage()
+            // Navigate back on successful update
+            onNavigateBack()
+        }
+        uiState.errorMessage?.let {
+            delay(3000)
+            profileViewModel.clearErrorMessage()
+        }
+    }
+} 
 
 // Weather Screen
 @Composable
@@ -1476,34 +2629,45 @@ fun ProfileStatCard(
 ) {
     val isDark = isSystemInDarkTheme()
     EnhancedCard(
+        modifier = Modifier.fillMaxWidth(),
         gradientColors = GradientColors.cardGradient,
         elevation = 4,
         cornerRadius = 12
     ) {
-        Column(
+        Row(
             modifier = Modifier
-                .padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = title,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodySmall,
-                color = if (isDark) Color.Black.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Column {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = value,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
         }
     }
 }
@@ -2251,3 +3415,4 @@ fun AnalysisSection(
         }
     }
 } 
+

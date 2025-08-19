@@ -5,13 +5,17 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -48,6 +52,9 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import android.content.Intent
+import androidx.core.content.FileProvider
+import android.content.Context
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -161,10 +168,12 @@ fun MarketplaceScreen(
             // Filters
             item {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Category Filter
+                    // Category Dropdown
                     ExposedDropdownMenuBox(
                         expanded = showCategoryDropdown,
                         onExpandedChange = { showCategoryDropdown = it },
@@ -203,7 +212,7 @@ fun MarketplaceScreen(
                         }
                     }
 
-                    // Location Filter
+                    // Location Dropdown
                     ExposedDropdownMenuBox(
                         expanded = showLocationDropdown,
                         onExpandedChange = { showLocationDropdown = it },
@@ -394,7 +403,12 @@ fun MarketplaceScreen(
             EnhancedProductRegistrationForm(
                 onRegister = { product ->
                     viewModel.addFarmerProduct(product)
+                    // Wait for the successMessage to be set, then dismiss the modal and reset the form
                     scope.launch {
+                        // Wait for the state to update
+                        marketplaceState.successMessage?.let {
+                            // Optionally show a snackbar or toast here
+                        }
                         bottomSheetState.hide()
                         showRegistrationForm = false
                     }
@@ -417,6 +431,7 @@ fun EnhancedFarmerProductCard(
 ) {
     val isDark = isSystemInDarkTheme()
     val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    val context = LocalContext.current
     
     EnhancedCard(
         modifier = Modifier.clickable { onClick() },
@@ -521,10 +536,16 @@ fun EnhancedFarmerProductCard(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = product.location,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.clickable {
+                            val gmmIntentUri = Uri.parse("geo:0,0?q=" + product.location)
+                            val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                            mapIntent.setPackage("com.google.android.apps.maps")
+                            context.startActivity(mapIntent)
+                        }
                     )
                 }
                     
@@ -564,17 +585,22 @@ fun EnhancedFarmerProductCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedButton(
-                    onClick = { /* Handle contact */ },
+                    onClick = { 
+                        val intent = Intent(Intent.ACTION_DIAL).apply {
+                            data = Uri.parse("tel:${product.farmerContact}")
+                        }
+                        context.startActivity(intent)
+                    },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.primary
                     )
-        ) {
-            Icon(
+                ) {
+                    Icon(
                         imageVector = Icons.Default.Phone,
                         contentDescription = "Contact",
                         modifier = Modifier.size(16.dp)
-            )
+                    )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Contact")
                 }
@@ -772,29 +798,39 @@ fun EnhancedProductRegistrationForm(
 ) {
     val isDark = isSystemInDarkTheme()
     val context = LocalContext.current
+    
+    // Define the lists at the top level to avoid type inference issues
+    val productTypes = listOf("Vegetables", "Fruits", "Grains", "Pulses", "Spices", "Dairy", "Poultry", "Other")
+    val units = listOf("kg", "ton", "quintal", "dozen", "piece", "liters")
+    val priceUnits = listOf("per kg", "per ton", "per quintal", "per dozen", "per piece", "per liter")
+    
     var productName by remember { mutableStateOf("") }
-    var productType by remember { mutableStateOf("") }
+    var productType by remember { mutableStateOf(productTypes.first()) }
     var quantity by remember { mutableStateOf("") }
-    var unit by remember { mutableStateOf("") }
+    var unit by remember { mutableStateOf(units.first()) }
     var expectedPrice by remember { mutableStateOf("") }
-    var priceUnit by remember { mutableStateOf("") }
+    var priceUnit by remember { mutableStateOf(priceUnits.first()) }
     var description by remember { mutableStateOf("") }
     var farmerName by remember { mutableStateOf("") }
     var farmerContact by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-    
+    var tempCameraImageUri by remember { mutableStateOf<Uri?>(null) }
     var showProductTypeDropdown by remember { mutableStateOf(false) }
     var showUnitDropdown by remember { mutableStateOf(false) }
     var showPriceUnitDropdown by remember { mutableStateOf(false) }
     var showSuccessMessage by remember { mutableStateOf(false) }
     var showImageSourceDialog by remember { mutableStateOf(false) }
     
-    val productTypes = listOf("Vegetables", "Fruits", "Grains", "Pulses", "Spices", "Dairy", "Poultry", "Other")
-    val units = listOf("kg", "ton", "quintal", "dozen", "piece", "liters")
-    val priceUnits = listOf("per kg", "per ton", "per quintal", "per dozen", "per piece", "per liter")
+    // Focus management for auto-focusing to next fields
+    val focusRequester = remember { FocusRequester() }
+    val quantityFocusRequester = remember { FocusRequester() }
+    val priceFocusRequester = remember { FocusRequester() }
+    val descriptionFocusRequester = remember { FocusRequester() }
+    val farmerNameFocusRequester = remember { FocusRequester() }
+    val farmerContactFocusRequester = remember { FocusRequester() }
+    val locationFocusRequester = remember { FocusRequester() }
     
-    // Photo picker launchers
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -804,166 +840,682 @@ fun EnhancedProductRegistrationForm(
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
-        if (!success) {
+        if (success) {
+            selectedImageUri = tempCameraImageUri
+        } else {
             selectedImageUri = null
         }
     }
     
-    // Helper function to create temporary file for camera
-    fun createTempImageFile(): Uri {
-        val tempFile = File.createTempFile("product_image_${System.currentTimeMillis()}", ".jpg", context.cacheDir)
-        return Uri.fromFile(tempFile)
-    }
-    
-    // Handle camera permission if needed
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            selectedImageUri = createTempImageFile()
-            cameraLauncher.launch(selectedImageUri)
+            val uri = createTempImageFileUri(context)
+            tempCameraImageUri = uri
+            cameraLauncher.launch(uri)
         }
     }
     
-    // Form validation
-    val isFormValid = productName.isNotEmpty() && 
-                     productType.isNotEmpty() && 
-                     quantity.isNotEmpty() && 
-                     unit.isNotEmpty() && 
-                     expectedPrice.isNotEmpty() && 
-                     priceUnit.isNotEmpty() &&
-                     farmerName.isNotEmpty() && 
-                     farmerContact.isNotEmpty() && 
-                     location.isNotEmpty()
+    // Auto-focus to first field when form opens
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
     
+    // Form validation
+    val isFormValid = productName.trim().isNotEmpty() &&
+            productType.trim().isNotEmpty() &&
+            quantity.trim().isNotEmpty() &&
+            unit.trim().isNotEmpty() &&
+            expectedPrice.trim().isNotEmpty() &&
+            priceUnit.trim().isNotEmpty() &&
+            location.trim().isNotEmpty() &&
+            farmerName.trim().isNotEmpty() &&
+            farmerContact.trim().isNotEmpty()
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .background(
+                color = if (isDark) Color(0xFF1A1A1A) else Color.White,
+                shape = RoundedCornerShape(24.dp)
+            )
     ) {
-        // Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-                text = "Register Your Product",
-                style = MaterialTheme.typography.headlineSmall.copy(
-                fontWeight = FontWeight.Bold
-            ),
-            color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
-        )
-            IconButton(onClick = onCancel) {
+        // Modern Header
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.primaryContainer
+                        )
+                    ),
+                    shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+                )
+                .padding(24.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Close",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    imageVector = Icons.Default.AddBox,
+                    contentDescription = "Register Product",
+                    tint = Color.White,
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Register Your Product",
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = Color.White
+                )
+                Text(
+                    text = "Add your farm products to the marketplace",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.8f)
                 )
             }
         }
-        
-        // Success Message
-        if (showSuccessMessage) {
+
+        // Form Content
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            // Product Image Section
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+                    containerColor = if (isDark) Color(0xFF2A2A2A) else Color(0xFFF8F9FA)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Success",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
+                    if (selectedImageUri != null) {
+                        AsyncImage(
+                            model = selectedImageUri,
+                            contentDescription = "Product Image",
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = { showImageSourceDialog = true },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Change Photo",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Change Photo")
+                            }
+                            OutlinedButton(
+                                onClick = { 
+                                    selectedImageUri = null
+                                    tempCameraImageUri = null
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.error
+                                )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Remove",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Remove")
+                            }
+                        }
+                    } else {
+                        Card(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clickable { showImageSourceDialog = true },
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AddAPhoto,
+                                    contentDescription = "Add Photo",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Add Photo",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "Tap to add a product photo",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            // Product Information Section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isDark) Color(0xFF2A2A2A) else Color(0xFFF8F9FA)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
                     Text(
-                        text = "Product added successfully!",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        text = "Product Information",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    
+                    // Product Name
+                    OutlinedTextField(
+                        value = productName,
+                        onValueChange = { 
+                            productName = it
+                            // Auto-focus to quantity field when product name is complete
+                            if (it.trim().isNotEmpty() && it.length > 2) {
+                                quantityFocusRequester.requestFocus()
+                            }
+                        },
+                        label = { Text("Product Name *") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        ),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Inventory,
+                                contentDescription = "Product Name",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    )
+
+                    // Product Type and Category
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        ExposedDropdownMenuBox(
+                            expanded = showProductTypeDropdown,
+                            onExpandedChange = { showProductTypeDropdown = !showProductTypeDropdown },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            OutlinedTextField(
+                                value = productType,
+                                onValueChange = { productType = it },
+                                label = { Text("Category *") },
+                                readOnly = true,
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = showProductTypeDropdown)
+                                },
+                                modifier = Modifier.menuAnchor(),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                                ),
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Category,
+                                        contentDescription = "Category",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            )
+                            ExposedDropdownMenu(
+                                expanded = showProductTypeDropdown,
+                                onDismissRequest = { showProductTypeDropdown = false }
+                            ) {
+                                productTypes.forEach { type ->
+                                    DropdownMenuItem(
+                                        text = { Text(type) },
+                                        onClick = {
+                                            productType = type
+                                            showProductTypeDropdown = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Quantity and Unit
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = quantity,
+                            onValueChange = { 
+                                quantity = it
+                                // Auto-focus to price field when quantity is complete
+                                if (it.trim().isNotEmpty() && it.toDoubleOrNull() != null) {
+                                    priceFocusRequester.requestFocus()
+                                }
+                            },
+                            label = { Text("Quantity *") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier
+                                .weight(1f)
+                                .focusRequester(quantityFocusRequester),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                            ),
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Scale,
+                                    contentDescription = "Quantity",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        )
+
+                        ExposedDropdownMenuBox(
+                            expanded = showUnitDropdown,
+                            onExpandedChange = { showUnitDropdown = !showUnitDropdown },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            OutlinedTextField(
+                                value = unit,
+                                onValueChange = { unit = it },
+                                label = { Text("Unit *") },
+                                readOnly = true,
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = showUnitDropdown)
+                                },
+                                modifier = Modifier.menuAnchor(),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                                )
+                            )
+                            ExposedDropdownMenu(
+                                expanded = showUnitDropdown,
+                                onDismissRequest = { showUnitDropdown = false }
+                            ) {
+                                units.forEach { unitOption ->
+                                    DropdownMenuItem(
+                                        text = { Text(unitOption) },
+                                        onClick = {
+                                            unit = unitOption
+                                            showUnitDropdown = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Price and Price Unit
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = expectedPrice,
+                            onValueChange = { 
+                                expectedPrice = it
+                                // Auto-focus to description field when price is complete
+                                if (it.trim().isNotEmpty() && it.toDoubleOrNull() != null) {
+                                    descriptionFocusRequester.requestFocus()
+                                }
+                            },
+                            label = { Text("Price *") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier
+                                .weight(1f)
+                                .focusRequester(priceFocusRequester),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                            ),
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.AttachMoney,
+                                    contentDescription = "Price",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        )
+
+                        ExposedDropdownMenuBox(
+                            expanded = showPriceUnitDropdown,
+                            onExpandedChange = { showPriceUnitDropdown = !showPriceUnitDropdown },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            OutlinedTextField(
+                                value = priceUnit,
+                                onValueChange = { priceUnit = it },
+                                label = { Text("Price Unit *") },
+                                readOnly = true,
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = showPriceUnitDropdown)
+                                },
+                                modifier = Modifier.menuAnchor(),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                                )
+                            )
+                            ExposedDropdownMenu(
+                                expanded = showPriceUnitDropdown,
+                                onDismissRequest = { showPriceUnitDropdown = false }
+                            ) {
+                                priceUnits.forEach { priceUnitOption ->
+                                    DropdownMenuItem(
+                                        text = { Text(priceUnitOption) },
+                                        onClick = {
+                                            priceUnit = priceUnitOption
+                                            showPriceUnitDropdown = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Description
+                    OutlinedTextField(
+                        value = description,
+                        onValueChange = { 
+                            description = it
+                            // Auto-focus to farmer name field when description is complete
+                            if (it.trim().isNotEmpty() && it.length > 10) {
+                                farmerNameFocusRequester.requestFocus()
+                            }
+                        },
+                        label = { Text("Description") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(descriptionFocusRequester),
+                        minLines = 3,
+                        maxLines = 5,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        ),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Description,
+                                contentDescription = "Description",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     )
                 }
             }
-        }
-        
-        // Product Image Section
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+
+            // Farmer Information Section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isDark) Color(0xFF2A2A2A) else Color(0xFFF8F9FA)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
-                Box {
-                    Card(
-                        modifier = Modifier
-                            .size(120.dp)
-                            .clickable { showImageSourceDialog = true },
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        if (selectedImageUri != null) {
-                            AsyncImage(
-                                model = selectedImageUri,
-                                contentDescription = "Selected Product Image",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            AsyncImage(
-                                model = R.drawable.default_profile,
-                                contentDescription = "Product Image",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-                    }
-                    
-                    // Image selected indicator
-                    if (selectedImageUri != null) {
-                        Card(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(4.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = "Image Selected",
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier
-                                    .size(16.dp)
-                                    .padding(2.dp)
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                if (selectedImageUri == null) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
                     Text(
-                        text = "Tap to add a product photo",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        text = "Farmer Information",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    
+                    // Farmer Name
+                    OutlinedTextField(
+                        value = farmerName,
+                        onValueChange = { 
+                            farmerName = it
+                            // Auto-focus to farmer contact field when farmer name is complete
+                            if (it.trim().isNotEmpty() && it.length > 2) {
+                                farmerContactFocusRequester.requestFocus()
+                            }
+                        },
+                        label = { Text("Farmer Name *") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(farmerNameFocusRequester),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        ),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Farmer Name",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    )
+
+                    // Farmer Contact
+                    OutlinedTextField(
+                        value = farmerContact,
+                        onValueChange = { 
+                            farmerContact = it
+                            // Auto-focus to location field when farmer contact is complete
+                            if (it.trim().isNotEmpty() && it.length >= 10) {
+                                locationFocusRequester.requestFocus()
+                            }
+                        },
+                        label = { Text("Contact Number *") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(farmerContactFocusRequester),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        ),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Phone,
+                                contentDescription = "Contact",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    )
+
+                    // Location
+                    OutlinedTextField(
+                        value = location,
+                        onValueChange = { 
+                            location = it
+                            // No auto-focus after location as it's the last field
+                        },
+                        label = { Text("Farm Location *") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(locationFocusRequester),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        ),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = "Location",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     )
                 }
+            }
+
+            // Action Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onCancel,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary
+                    ),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Cancel,
+                        contentDescription = "Cancel",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Cancel")
+                }
+                
+                Button(
+                    onClick = {
+                        val product = FarmerProduct(
+                            id = System.currentTimeMillis().toString(),
+                            productName = productName.trim(),
+                            productType = productType,
+                            quantity = quantity.toDoubleOrNull() ?: 0.0,
+                            unit = unit,
+                            expectedPrice = expectedPrice.toDoubleOrNull() ?: 0.0,
+                            priceUnit = priceUnit,
+                            location = location.trim(),
+                            farmerName = farmerName.trim(),
+                            farmerContact = farmerContact.trim(),
+                            description = description.trim(),
+                            imageUrl = selectedImageUri?.toString()
+                        )
+                        onRegister(product)
+                        
+                        // Reset form fields
+                        productName = ""
+                        productType = productTypes.first()
+                        quantity = ""
+                        unit = units.first()
+                        expectedPrice = ""
+                        priceUnit = priceUnits.first()
+                        location = ""
+                        farmerName = ""
+                        farmerContact = ""
+                        description = ""
+                        selectedImageUri = null
+                        tempCameraImageUri = null
+                        showSuccessMessage = true
+                    },
+                    modifier = Modifier.weight(1f),
+                    enabled = isFormValid,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Register",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Register Product")
+                }
+            }
+
+            // Required fields note
+            Text(
+                text = "* Required fields",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
+    }
+
+    // Image Source Dialog
+    if (showImageSourceDialog) {
+        AlertDialog(
+            onDismissRequest = { showImageSourceDialog = false },
+            title = { 
+                Text(
+                    "Select Image Source",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                ) 
+            },
+            text = { 
+                Text(
+                    "Choose how you want to add a product photo",
+                    style = MaterialTheme.typography.bodyMedium
+                ) 
+            },
+            confirmButton = {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     OutlinedButton(
-                        onClick = { showImageSourceDialog = true }
+                        onClick = {
+                            showImageSourceDialog = false
+                            galleryLauncher.launch("image/*")
+                        },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PhotoLibrary,
+                            contentDescription = "Gallery",
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Gallery")
+                    }
+                    Button(
+                        onClick = {
+                            showImageSourceDialog = false
+                            cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
                     ) {
                         Icon(
                             imageVector = Icons.Default.CameraAlt,
@@ -971,352 +1523,23 @@ fun EnhancedProductRegistrationForm(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(if (selectedImageUri == null) "Add Photo" else "Change Photo")
-                    }
-                    if (selectedImageUri != null) {
-                        OutlinedButton(
-                            onClick = { selectedImageUri = null }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Remove Photo",
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Remove")
-                        }
+                        Text("Camera")
                     }
                 }
-            }
-        }
-        
-        // Image Source Dialog
-        if (showImageSourceDialog) {
-            AlertDialog(
-                onDismissRequest = { showImageSourceDialog = false },
-                title = { Text("Select Image Source") },
-                text = { Text("Choose how you want to add a product photo") },
-                confirmButton = {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        OutlinedButton(
-                            onClick = {
-                                showImageSourceDialog = false
-                                galleryLauncher.launch("image/*")
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.PhotoLibrary,
-                                contentDescription = "Gallery",
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Gallery")
-                        }
-                        Button(
-                            onClick = {
-                                showImageSourceDialog = false
-                                cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CameraAlt,
-                                contentDescription = "Camera",
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Camera")
-                        }
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showImageSourceDialog = false }) {
-                        Text("Cancel")
-                    }
-                }
-            )
-        }
-        
-        // Product Name
-        OutlinedTextField(
-            value = productName,
-            onValueChange = { productName = it },
-            label = { Text("Product Name *") },
-            modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
-                containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        
-        // Product Type Dropdown
-        ExposedDropdownMenuBox(
-            expanded = showProductTypeDropdown,
-            onExpandedChange = { showProductTypeDropdown = it }
-        ) {
-            OutlinedTextField(
-                value = productType,
-                onValueChange = { },
-                readOnly = true,
-                label = { Text("Product Type *") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showProductTypeDropdown) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
-                    containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            )
-            ExposedDropdownMenu(
-                expanded = showProductTypeDropdown,
-                onDismissRequest = { showProductTypeDropdown = false }
-            ) {
-                productTypes.forEach { type ->
-                    DropdownMenuItem(
-                        text = { Text(type) },
-                        onClick = {
-                            productType = type
-                            showProductTypeDropdown = false
-                        }
-                    )
-                    }
-                }
-        }
-        
-        // Quantity and Unit Row
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedTextField(
-                value = quantity,
-                onValueChange = { quantity = it },
-                label = { Text("Quantity *") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.weight(1f),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
-                    containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            )
-            
-            ExposedDropdownMenuBox(
-                expanded = showUnitDropdown,
-                onExpandedChange = { showUnitDropdown = it },
-                modifier = Modifier.weight(1f)
-            ) {
-                OutlinedTextField(
-                    value = unit,
-                    onValueChange = { },
-                    readOnly = true,
-                    label = { Text("Unit *") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showUnitDropdown) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
-                        containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                )
-                ExposedDropdownMenu(
-                    expanded = showUnitDropdown,
-                    onDismissRequest = { showUnitDropdown = false }
-                ) {
-                    units.forEach { unitOption ->
-                        DropdownMenuItem(
-                            text = { Text(unitOption) },
-                            onClick = {
-                                unit = unitOption
-                                showUnitDropdown = false
-                            }
-                        )
-                    }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showImageSourceDialog = false }
+                ) { 
+                    Text("Cancel") 
                 }
             }
-        }
-        
-        // Price and Price Unit Row
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedTextField(
-                value = expectedPrice,
-                onValueChange = { expectedPrice = it },
-                label = { Text("Price *") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.weight(1f),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
-                    containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            )
-            
-            ExposedDropdownMenuBox(
-                expanded = showPriceUnitDropdown,
-                onExpandedChange = { showPriceUnitDropdown = it },
-                modifier = Modifier.weight(1f)
-            ) {
-                OutlinedTextField(
-                    value = priceUnit,
-                    onValueChange = { },
-                    readOnly = true,
-                    label = { Text("Price Unit *") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showPriceUnitDropdown) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
-                        containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                )
-                ExposedDropdownMenu(
-                    expanded = showPriceUnitDropdown,
-                    onDismissRequest = { showPriceUnitDropdown = false }
-                ) {
-                    priceUnits.forEach { priceUnitOption ->
-                        DropdownMenuItem(
-                            text = { Text(priceUnitOption) },
-                            onClick = {
-                                priceUnit = priceUnitOption
-                                showPriceUnitDropdown = false
-                            }
-                        )
-                    }
-                }
-            }
-        }
-        
-        // Description
-        OutlinedTextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("Description (Optional)") },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 3,
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
-                containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        
-        // Farmer Name
-        OutlinedTextField(
-            value = farmerName,
-            onValueChange = { farmerName = it },
-            label = { Text("Farmer Name *") },
-            modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
-                containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        
-        // Farmer Contact
-        OutlinedTextField(
-            value = farmerContact,
-            onValueChange = { farmerContact = it },
-            label = { Text("Contact Number *") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-            modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
-                containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        
-        // Location
-        OutlinedTextField(
-            value = location,
-            onValueChange = { location = it },
-            label = { Text("Farm Location *") },
-            modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = if (isDark) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
-                containerColor = if (isDark) Color.White else MaterialTheme.colorScheme.surfaceVariant,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        
-        // Action Buttons
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedButton(
-                onClick = onCancel,
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Text("Cancel")
-            }
-            Button(
-                onClick = {
-                    val product = FarmerProduct(
-                        id = System.currentTimeMillis().toString(),
-                        productName = productName,
-                        productType = productType,
-                        quantity = quantity.toDoubleOrNull() ?: 0.0,
-                        unit = unit,
-                        expectedPrice = expectedPrice.toDoubleOrNull() ?: 0.0,
-                        priceUnit = priceUnit,
-                        location = location,
-                        farmerName = farmerName,
-                        farmerContact = farmerContact,
-                        description = description,
-                        imageUrl = selectedImageUri?.toString()
-                    )
-                    onRegister(product)
-                    showSuccessMessage = true
-                },
-                modifier = Modifier.weight(1f),
-                enabled = isFormValid,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Text("Register Product")
-            }
-        }
-        
-        // Required fields note
-        Text(
-            text = "* Required fields",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 8.dp)
         )
     }
+}
+
+// Helper function moved to top-level
+fun createTempImageFileUri(context: Context): Uri {
+    val tempFile = File.createTempFile("product_image_${System.currentTimeMillis()}", ".jpg", context.externalCacheDir)
+    return FileProvider.getUriForFile(context, context.packageName + ".fileprovider", tempFile)
 } 

@@ -3,8 +3,10 @@ package com.example.mittise.di
 import android.util.Log
 import com.example.mittise.data.api.MarketplaceApi
 import com.example.mittise.data.api.WeatherApi
+import com.example.mittise.data.api.MandiPricesApi
 import com.example.mittise.data.repository.WeatherRepository
 import com.example.mittise.data.repository.MarketplaceRepository
+import com.example.mittise.data.repository.MandiPricesRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -67,5 +69,30 @@ object NetworkModule {
     fun provideMarketplaceRepository(marketplaceApi: MarketplaceApi): MarketplaceRepository {
         Log.d(TAG, "provideMarketplaceRepository: Creating marketplace repository")
         return MarketplaceRepository(marketplaceApi)
+    }
+
+    @Provides
+    @Singleton
+    @Named("mandi")
+    fun provideMandiRetrofit(): Retrofit {
+        Log.d(TAG, "provideMandiRetrofit: Creating mandi prices retrofit")
+        return Retrofit.Builder()
+            .baseUrl("https://api.data.gov.in/") // Indian Government API base URL
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideMandiPricesApi(@Named("mandi") retrofit: Retrofit): MandiPricesApi {
+        Log.d(TAG, "provideMandiPricesApi: Creating real mandi prices API")
+        return retrofit.create(MandiPricesApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMandiPricesRepository(mandiPricesApi: MandiPricesApi): MandiPricesRepository {
+        Log.d(TAG, "provideMandiPricesRepository: Creating mandi prices repository")
+        return MandiPricesRepository(mandiPricesApi)
     }
 } 
