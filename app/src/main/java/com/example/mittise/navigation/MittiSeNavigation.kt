@@ -252,7 +252,7 @@ fun MittiSeMainApp(onNavigateToLogin: () -> Unit = {}) {
 
                 // Farmer Product Registration
                 composable(Screen.FarmerProductRegistration.route) {
-                    val viewModel: com.example.mittise.ui.marketplace.MarketplaceViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+                    val viewModel: com.example.mittise.ui.marketplace.MarketplaceViewModel = androidx.hilt.navigation.compose.hiltViewModel()
                     EnhancedProductRegistrationForm(
                         onRegister = { product -> viewModel.addFarmerProduct(product) },
                         onCancel = { /* Optionally popBackStack or do nothing */ }

@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.mittise.R
 import com.example.mittise.ui.theme.*
 import com.example.mittise.ui.viewmodels.AuthViewModel
+import com.example.mittise.util.GoogleSignInState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +41,8 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var showGoogleSignInError by remember { mutableStateOf(false) }
+    var googleSignInErrorMessage by remember { mutableStateOf("") }
     
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -59,6 +62,15 @@ fun LoginScreen(
         }
         uiState.successMessage?.let { message ->
             // You can replace this with SnackbarHost if you have one
+        }
+    }
+    
+    // Handle Google Sign-In errors
+    val googleSignInError by GoogleSignInState.signInError.collectAsStateWithLifecycle()
+    LaunchedEffect(googleSignInError) {
+        googleSignInError?.let { error ->
+            showGoogleSignInError = true
+            googleSignInErrorMessage = error
         }
     }
 
@@ -291,6 +303,22 @@ fun LoginScreen(
                 )
             }
         }
+        
+        // Google Sign-In Error Snackbar
+        if (showGoogleSignInError) {
+            Snackbar(
+                modifier = Modifier.padding(16.dp),
+                action = {
+                    TextButton(
+                        onClick = { showGoogleSignInError = false }
+                    ) {
+                        Text("Dismiss")
+                    }
+                }
+            ) {
+                Text(googleSignInErrorMessage)
+            }
+        }
     }
 }
 
@@ -307,6 +335,8 @@ fun SignUpScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var showGoogleSignInError by remember { mutableStateOf(false) }
+    var googleSignInErrorMessage by remember { mutableStateOf("") }
     
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
@@ -314,6 +344,15 @@ fun SignUpScreen(
     LaunchedEffect(uiState.isLoggedIn) {
         if (uiState.isLoggedIn) {
             onSignUpSuccess()
+        }
+    }
+    
+    // Handle Google Sign-In errors
+    val googleSignInError by GoogleSignInState.signInError.collectAsStateWithLifecycle()
+    LaunchedEffect(googleSignInError) {
+        googleSignInError?.let { error ->
+            showGoogleSignInError = true
+            googleSignInErrorMessage = error
         }
     }
 
@@ -566,6 +605,22 @@ fun SignUpScreen(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.clickable(enabled = !uiState.isLoading) { onLoginClick() }
                 )
+            }
+        }
+        
+        // Google Sign-In Error Snackbar
+        if (showGoogleSignInError) {
+            Snackbar(
+                modifier = Modifier.padding(16.dp),
+                action = {
+                    TextButton(
+                        onClick = { showGoogleSignInError = false }
+                    ) {
+                        Text("Dismiss")
+                    }
+                }
+            ) {
+                Text(googleSignInErrorMessage)
             }
         }
     }

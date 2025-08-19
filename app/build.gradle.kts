@@ -11,7 +11,7 @@ plugins {
 
 android {
     namespace = "com.example.mittise"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.mittise"
@@ -78,6 +78,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation("androidx.compose.runtime:runtime-livedata")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    implementation(libs.androidx.lifecycle.runtime.compose.android)
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 

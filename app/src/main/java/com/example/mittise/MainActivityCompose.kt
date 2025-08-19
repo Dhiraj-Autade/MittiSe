@@ -28,6 +28,7 @@ import com.example.mittise.util.GoogleSignInHelper
 import com.example.mittise.util.GoogleSignInState
 import com.example.mittise.util.LocaleHelper
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.navigation.NavController
 
 @AndroidEntryPoint
 class MainActivityCompose : ComponentActivity() {
@@ -43,6 +44,8 @@ class MainActivityCompose : ComponentActivity() {
             handleGoogleSignInResult(result.data)
         } else {
             Log.e("MainActivityCompose", "Google Sign-In failed with result code: ${result.resultCode}")
+            // Set error state
+            GoogleSignInState.setSignInError("Sign-in was cancelled or failed")
         }
     }
     
@@ -67,7 +70,17 @@ class MainActivityCompose : ComponentActivity() {
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         MittiSeApp(
-                            onGoogleSignIn = { launchGoogleSignIn() }
+                            onGoogleSignIn = { launchGoogleSignIn() },
+                            onGoogleSignInSuccess = { navController ->
+                                Log.d("MainActivityCompose", "Navigating to dashboard after successful sign-in")
+                                navController.navigate(Screen.Dashboard.route) {
+                                    popUpTo(Screen.Login.route) { inclusive = true }
+                                }
+                            },
+                            onGoogleSignInError = { error ->
+                                Log.e("MainActivityCompose", "Google Sign-In error: $error")
+                                // Error will be handled in the UI
+                            }
                         )
                     }
                 }
@@ -77,8 +90,13 @@ class MainActivityCompose : ComponentActivity() {
     
     private fun launchGoogleSignIn() {
         Log.d("MainActivityCompose", "Launching Google Sign-In")
-        val signInIntent = googleSignInHelper.getSignInIntent()
-        googleSignInLauncher.launch(signInIntent)
+        try {
+            val signInIntent = googleSignInHelper.getSignInIntent()
+            googleSignInLauncher.launch(signInIntent)
+        } catch (e: Exception) {
+            Log.e("MainActivityCompose", "Error launching Google Sign-In", e)
+            GoogleSignInState.setSignInError("Failed to launch Google Sign-In: ${e.message}")
+        }
     }
     
     private fun handleGoogleSignInResult(data: Intent?) {
@@ -87,17 +105,24 @@ class MainActivityCompose : ComponentActivity() {
         try {
             val account = googleSignInHelper.handleSignInResult(data)
             Log.d("MainActivityCompose", "Account received: ${account?.email}")
-            GoogleSignInState.setGoogleSignInAccount(account)
+            if (account != null) {
+                GoogleSignInState.setGoogleSignInAccount(account)
+                GoogleSignInState.setSignInSuccess(true)
+                Log.d("MainActivityCompose", "Google Sign-In successful, account set")
+            } else {
+                GoogleSignInState.setSignInError("Sign-in failed: No account received")
+            }
         } catch (e: Exception) {
             Log.e("MainActivityCompose", "Error handling Google Sign-In result", e)
             GoogleSignInState.setGoogleSignInAccount(null)
+            GoogleSignInState.setSignInError("Sign-in failed: ${e.message}")
         }
     }
     
     override fun attachBaseContext(newBase: android.content.Context) {
         super.attachBaseContext(LocaleHelper.onAttach(newBase))
     }
-    
+        
     override fun onResume() {
         super.onResume()
         // Ensure locale is applied when resuming
@@ -106,22 +131,50 @@ class MainActivityCompose : ComponentActivity() {
 }
 
 @Composable
-fun MittiSeApp(onGoogleSignIn: () -> Unit) {
+fun MittiSeApp(
+    onGoogleSignIn: () -> Unit,
+    onGoogleSignInSuccess: (NavController) -> Unit,
+    onGoogleSignInError: (String) -> Unit
+) {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = hiltViewModel()
     val authState by authViewModel.uiState.collectAsStateWithLifecycle()
     
     // Navigate to login when user logs out
     LaunchedEffect(authState.isLoggedIn) {
-        if (!authState.isLoggedIn && navController.currentDestination?.route == Screen.Main.route) {
+        if (!authState.isLoggedIn && navController.currentDestination?.route == Screen.Dashboard.route) {
             navController.navigate(Screen.Login.route) {
                 popUpTo(0) { inclusive = true }
             }
         }
     }
     
+    // Handle Google Sign-In success
+    val googleSignInAccount by GoogleSignInState.googleSignInAccount.collectAsStateWithLifecycle()
+    val signInSuccess by GoogleSignInState.signInSuccess.collectAsStateWithLifecycle()
+    val signInError by GoogleSignInState.signInError.collectAsStateWithLifecycle()
+    
+    LaunchedEffect(googleSignInAccount, signInSuccess) {
+        if (googleSignInAccount != null && signInSuccess) {
+            Log.d("MittiSeApp", "Google Sign-In successful, triggering navigation")
+            onGoogleSignInSuccess(navController)
+            // Clear the success state to prevent multiple navigations
+            GoogleSignInState.clearSignInSuccess()
+        }
+    }
+    
+    // Handle Google Sign-In error
+    LaunchedEffect(signInError) {
+        signInError?.let { error ->
+            Log.e("MittiSeApp", "Google Sign-In error: $error")
+            onGoogleSignInError(error)
+            // Clear the error state
+            GoogleSignInState.clearSignInError()
+        }
+    }
+    
     // Determine start destination based on auth state
-    val startDestination = if (authState.isLoggedIn) Screen.Main.route else Screen.Login.route
+    val startDestination = if (authState.isLoggedIn) Screen.Dashboard.route else Screen.Login.route
     
     NavHost(
         navController = navController,
@@ -130,8 +183,8 @@ fun MittiSeApp(onGoogleSignIn: () -> Unit) {
         composable(Screen.Login.route) {
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate(Screen.Main.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(Screen.Dashboard.route) { inclusive = true }
                     }
                 },
                 onSignUpClick = {
@@ -144,7 +197,7 @@ fun MittiSeApp(onGoogleSignIn: () -> Unit) {
         composable(Screen.SignUp.route) {
             SignUpScreen(
                 onSignUpSuccess = {
-                    navController.navigate(Screen.Main.route) {
+                    navController.navigate(Screen.Dashboard.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
@@ -155,7 +208,7 @@ fun MittiSeApp(onGoogleSignIn: () -> Unit) {
             )
         }
         
-        composable(Screen.Main.route) {
+        composable(Screen.Dashboard.route) {
             MittiSeMainApp(
                 onNavigateToLogin = {
                     navController.navigate(Screen.Login.route) {

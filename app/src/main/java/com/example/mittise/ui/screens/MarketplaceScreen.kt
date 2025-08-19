@@ -36,7 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.mittise.R
 import com.example.mittise.data.model.FarmerProduct
@@ -62,7 +62,7 @@ fun MarketplaceScreen(
     onProductClick: (FarmerProduct) -> Unit,
     onRegisterProduct: () -> Unit
 ) {
-    val viewModel: MarketplaceViewModel = viewModel()
+    val viewModel: MarketplaceViewModel = hiltViewModel()
     val marketplaceState by viewModel.marketplaceState.collectAsState()
     var showRegistrationForm by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
@@ -92,7 +92,8 @@ fun MarketplaceScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
-                .padding(16.dp),
+                .padding(16.dp)
+                .imePadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Header with Product Count
@@ -103,7 +104,7 @@ fun MarketplaceScreen(
                     cornerRadius = 20
                 ) {
                     Column(
-                        modifier = Modifier.padding(20.dp)
+                        modifier = Modifier.fillMaxWidth().padding(20.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -354,7 +355,7 @@ fun MarketplaceScreen(
             // Products List
             if (filteredItems.isEmpty() && !marketplaceState.isLoading) {
                 item {
-                    EmptyStateCard()
+                    EmptyStateCard(modifier = Modifier.fillMaxWidth()) // This line had the error
                 }
             } else {
                 items(filteredItems) { item ->
@@ -368,7 +369,8 @@ fun MarketplaceScreen(
                         is MarketplaceItem.FarmerProductItem -> {
                             EnhancedFarmerProductCard(
                                 product = item.product,
-                                onClick = { onProductClick(item.product) }
+                                onClick = { onProductClick(item.product) },
+                                onDelete = { viewModel.deleteFarmerProduct(it) }
                             )
                         }
                     }
@@ -427,7 +429,8 @@ fun MarketplaceScreen(
 @Composable
 fun EnhancedFarmerProductCard(
     product: FarmerProduct,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onDelete: (FarmerProduct) -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
     val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
@@ -439,9 +442,20 @@ fun EnhancedFarmerProductCard(
         elevation = 8,
         cornerRadius = 16
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            IconButton(
+                onClick = { onDelete(product) },
+                modifier = Modifier.align(Alignment.TopEnd)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
             // Header with Product Image and Basic Info
         Row(
                 verticalAlignment = Alignment.Top
@@ -621,6 +635,7 @@ fun EnhancedFarmerProductCard(
                     Text("View Details")
                 }
             }
+            }
         }
     }
 }
@@ -758,8 +773,9 @@ fun RegularProductCard(
 }
 
 @Composable
-fun EmptyStateCard() {
+fun EmptyStateCard(modifier: Modifier = Modifier) {
     EnhancedCard(
+        modifier = modifier, // Applied modifier here
         gradientColors = GradientColors.cardGradient,
         elevation = 8,
         cornerRadius = 16
@@ -824,12 +840,6 @@ fun EnhancedProductRegistrationForm(
     
     // Focus management for auto-focusing to next fields
     val focusRequester = remember { FocusRequester() }
-    val quantityFocusRequester = remember { FocusRequester() }
-    val priceFocusRequester = remember { FocusRequester() }
-    val descriptionFocusRequester = remember { FocusRequester() }
-    val farmerNameFocusRequester = remember { FocusRequester() }
-    val farmerContactFocusRequester = remember { FocusRequester() }
-    val locationFocusRequester = remember { FocusRequester() }
     
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -1047,13 +1057,7 @@ fun EnhancedProductRegistrationForm(
                     // Product Name
                     OutlinedTextField(
                         value = productName,
-                        onValueChange = { 
-                            productName = it
-                            // Auto-focus to quantity field when product name is complete
-                            if (it.trim().isNotEmpty() && it.length > 2) {
-                                quantityFocusRequester.requestFocus()
-                            }
-                        },
+                        onValueChange = { productName = it },
                         label = { Text("Product Name *") },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1126,18 +1130,11 @@ fun EnhancedProductRegistrationForm(
                     ) {
                         OutlinedTextField(
                             value = quantity,
-                            onValueChange = { 
-                                quantity = it
-                                // Auto-focus to price field when quantity is complete
-                                if (it.trim().isNotEmpty() && it.toDoubleOrNull() != null) {
-                                    priceFocusRequester.requestFocus()
-                                }
-                            },
+                            onValueChange = { quantity = it },
                             label = { Text("Quantity *") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             modifier = Modifier
-                                .weight(1f)
-                                .focusRequester(quantityFocusRequester),
+                                .weight(1f),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.outline
@@ -1194,25 +1191,18 @@ fun EnhancedProductRegistrationForm(
                     ) {
                         OutlinedTextField(
                             value = expectedPrice,
-                            onValueChange = { 
-                                expectedPrice = it
-                                // Auto-focus to description field when price is complete
-                                if (it.trim().isNotEmpty() && it.toDoubleOrNull() != null) {
-                                    descriptionFocusRequester.requestFocus()
-                                }
-                            },
+                            onValueChange = { expectedPrice = it },
                             label = { Text("Price *") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             modifier = Modifier
-                                .weight(1f)
-                                .focusRequester(priceFocusRequester),
+                                .weight(1f),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.outline
                             ),
                             leadingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.AttachMoney,
+                                    imageVector = Icons.Default.CurrencyRupee,
                                     contentDescription = "Price",
                                     tint = MaterialTheme.colorScheme.primary
                                 )
@@ -1258,17 +1248,10 @@ fun EnhancedProductRegistrationForm(
                     // Description
                     OutlinedTextField(
                         value = description,
-                        onValueChange = { 
-                            description = it
-                            // Auto-focus to farmer name field when description is complete
-                            if (it.trim().isNotEmpty() && it.length > 10) {
-                                farmerNameFocusRequester.requestFocus()
-                            }
-                        },
+                        onValueChange = { description = it },
                         label = { Text("Description") },
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(descriptionFocusRequester),
+                            .fillMaxWidth(),
                         minLines = 3,
                         maxLines = 5,
                         colors = OutlinedTextFieldDefaults.colors(
@@ -1309,17 +1292,10 @@ fun EnhancedProductRegistrationForm(
                     // Farmer Name
                     OutlinedTextField(
                         value = farmerName,
-                        onValueChange = { 
-                            farmerName = it
-                            // Auto-focus to farmer contact field when farmer name is complete
-                            if (it.trim().isNotEmpty() && it.length > 2) {
-                                farmerContactFocusRequester.requestFocus()
-                            }
-                        },
+                        onValueChange = { farmerName = it },
                         label = { Text("Farmer Name *") },
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(farmerNameFocusRequester),
+                            .fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outline
@@ -1336,18 +1312,11 @@ fun EnhancedProductRegistrationForm(
                     // Farmer Contact
                     OutlinedTextField(
                         value = farmerContact,
-                        onValueChange = { 
-                            farmerContact = it
-                            // Auto-focus to location field when farmer contact is complete
-                            if (it.trim().isNotEmpty() && it.length >= 10) {
-                                locationFocusRequester.requestFocus()
-                            }
-                        },
+                        onValueChange = { farmerContact = it },
                         label = { Text("Contact Number *") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(farmerContactFocusRequester),
+                            .fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outline
@@ -1364,14 +1333,10 @@ fun EnhancedProductRegistrationForm(
                     // Location
                     OutlinedTextField(
                         value = location,
-                        onValueChange = { 
-                            location = it
-                            // No auto-focus after location as it's the last field
-                        },
+                        onValueChange = { location = it },
                         label = { Text("Farm Location *") },
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(locationFocusRequester),
+                            .fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outline
