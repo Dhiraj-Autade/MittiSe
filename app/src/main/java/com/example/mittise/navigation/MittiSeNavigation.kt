@@ -169,7 +169,10 @@ fun MittiSeMainApp(onNavigateToLogin: () -> Unit = {}) {
 
                 // Profile
                 composable(Screen.Profile.route) {
-                    ProfileScreen(onNavigateToLogin = onNavigateToLogin)
+                    ProfileScreen(
+                        onNavigateToLogin = onNavigateToLogin,
+                        onNavigateToEditProfile = { navController.navigate(Screen.EditProfile.route) }
+                    )
                 }
 
                 // Weather
@@ -242,12 +245,18 @@ fun MittiSeMainApp(onNavigateToLogin: () -> Unit = {}) {
 
                 // Edit Profile
                 composable(Screen.EditProfile.route) {
-                    PlaceholderScreens.EditProfileScreen()
+                    PlaceholderScreens.EditProfileScreen(
+                        onNavigateBack = { navController.popBackStack() }
+                    )
                 }
 
                 // Farmer Product Registration
                 composable(Screen.FarmerProductRegistration.route) {
-                    PlaceholderScreens.FarmerProductRegistrationScreen()
+                    val viewModel: com.example.mittise.ui.marketplace.MarketplaceViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+                    EnhancedProductRegistrationForm(
+                        onRegister = { product -> viewModel.addFarmerProduct(product) },
+                        onCancel = { /* Optionally popBackStack or do nothing */ }
+                    )
                 }
             }
         }

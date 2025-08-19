@@ -65,6 +65,8 @@ class AuthRepository @Inject constructor(
             val user = authResult.user
             
             if (user != null) {
+                // Ensure user document exists in Firestore
+                ensureUserDocumentExists(user)
                 Result.success(user)
             } else {
                 Result.failure(Exception("Sign in failed"))
@@ -101,6 +103,58 @@ class AuthRepository @Inject constructor(
             }
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+    
+    suspend fun updateUserInfo(userId: String, userInfo: Map<String, Any>): Result<Unit> {
+        return try {
+            println("Updating user info for userId: $userId")
+            println("User info: $userInfo")
+            
+            firestore.collection("users")
+                .document(userId)
+                .set(userInfo, com.google.firebase.firestore.SetOptions.merge())
+                .await()
+            
+            println("User info updated successfully")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            println("Failed to update user info: ${e.message}")
+            Result.failure(e)
+        }
+    }
+    
+    private suspend fun ensureUserDocumentExists(user: FirebaseUser) {
+        try {
+            println("Checking if user document exists for userId: ${user.uid}")
+            
+            val document = firestore.collection("users")
+                .document(user.uid)
+                .get()
+                .await()
+            
+            if (!document.exists()) {
+                println("User document doesn't exist, creating it...")
+                // Create basic user document if it doesn't exist
+                val userInfo = hashMapOf(
+                    "firstName" to (user.displayName?.split(" ")?.firstOrNull() ?: ""),
+                    "lastName" to (user.displayName?.split(" ")?.drop(1)?.joinToString(" ") ?: ""),
+                    "email" to (user.email ?: ""),
+                    "createdAt" to System.currentTimeMillis()
+                )
+                
+                firestore.collection("users")
+                    .document(user.uid)
+                    .set(userInfo)
+                    .await()
+                
+                println("User document created successfully")
+            } else {
+                println("User document already exists")
+            }
+        } catch (e: Exception) {
+            // Log error but don't fail the sign in process
+            println("Failed to ensure user document exists: ${e.message}")
         }
     }
 }
