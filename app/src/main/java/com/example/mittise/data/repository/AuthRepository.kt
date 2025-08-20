@@ -6,7 +6,6 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -156,44 +155,15 @@ class AuthRepository @Inject constructor(
             println("Updating user info for userId: $userId")
             println("User info: $userInfo")
             
-            // Add timestamp for when the profile was last updated
-            val updatedUserInfo = userInfo.toMutableMap().apply {
-                put("updatedAt", System.currentTimeMillis())
-            }
-            
             firestore.collection("users")
                 .document(userId)
-                .set(updatedUserInfo, SetOptions.merge())
+                .set(userInfo, com.google.firebase.firestore.SetOptions.merge())
                 .await()
             
             println("User info updated successfully")
             Result.success(Unit)
         } catch (e: Exception) {
             println("Failed to update user info: ${e.message}")
-            Result.failure(e)
-        }
-    }
-    
-    // Add method to check if user profile is complete
-    suspend fun isProfileComplete(userId: String): Result<Boolean> {
-        return try {
-            val document = firestore.collection("users")
-                .document(userId)
-                .get()
-                .await()
-            
-            if (document.exists()) {
-                val data = document.data
-                val requiredFields = listOf("firstName", "lastName", "phone", "location")
-                val isComplete = requiredFields.all { field ->
-                    val value = data?.get(field) as? String
-                    value != null && value.isNotBlank()
-                }
-                Result.success(isComplete)
-            } else {
-                Result.success(false)
-            }
-        } catch (e: Exception) {
             Result.failure(e)
         }
     }
